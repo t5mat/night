@@ -466,14 +466,15 @@ $^Space::
     ContextFolderTrack := (1 << 1)
     ContextTrackListTrack := (1 << 2)
     ContextInsertSlot := (1 << 3)
-    ContextSendSlot := (1 << 4)
-    ContextInsertsRack := (1 << 5)
-    ContextSendsRack := (1 << 6)
-    ContextEditor := (1 << 7)
-    ContextKeyEditor := (1 << 8)
-    ContextSelected := (1 << 9)
-    ContextSelectedAudio := (1 << 10)
-    ContextSelectedMidi := (1 << 11)
+    ContextNonEmptyInsertSlot := (1 << 4)
+    ContextSendSlot := (1 << 5)
+    ContextInsertsRack := (1 << 6)
+    ContextSendsRack := (1 << 7)
+    ContextEditor := (1 << 8)
+    ContextKeyEditor := (1 << 9)
+    ContextSelected := (1 << 10)
+    ContextSelectedAudio := (1 << 11)
+    ContextSelectedMidi := (1 << 12)
 
     Context := 0
     if (FindMenuItemIndex(Menu, "Copy First Selected Channel's Settings") != -1) {
@@ -485,6 +486,9 @@ $^Space::
         }
     } else if (FindMenuItemIndex(Menu, "Set as last Pre-Fader Slot") != -1) {
         Context |= ContextInsertSlot
+        if (FindMenuItemIndex(Menu, "Load Preset...") != -1) {
+            Context |= ContextNonEmptyInsertSlot
+        }
     } else if (FindMenuItemIndex(Menu, "Clear Send") != -1) {
         Context |= ContextSendSlot
     } else if (FindMenuItemIndex(Menu, "Bypass") != -1 && FindMenuItemIndex(Menu, "Copy") != -1 && FindMenuItemIndex(Menu, "Paste") != -1 && FindMenuItemIndex(Menu, "Clear") != -1) {
@@ -625,49 +629,57 @@ $^Space::
             CloseCurrentMenu()
             Send % MacroKeys["Edit - Delete"]
             return
-        case "$e":
-            CloseCurrentMenu()
-            Send % MacroKeys["Edit - Activate/Deactivate"]
-            return
-        case "$+e":
-            CloseCurrentMenu()
-            Send % "^!{Enter}"
-            return
         case "$f":
             TrySelectCurrentMenuItem(Menu, "Set as last Pre-Fader Slot")
-            return
-        case "$s":
-            TrySelectCurrentMenuItem(Menu, "Activate/Deactivate Side-Chaining")
-            return
-        case "$q":
-            TrySelectCurrentMenuItem(Menu, "Switch to A Setting") || TrySelectCurrentMenuItem(Menu, "Switch to B Setting")
-            return
-        case "$+q":
-            TrySelectCurrentMenuItem(Menu, "Apply Current Settings to A and B")
             return
         case "$r":
             CloseCurrentMenu()
             Send % "!{Enter}"
             return
-        case "$Space":
-            WinGet Active, ID, A
-            CloseCurrentMenu()
-            Send % "!{Click}"
-            Sleep % A_WinDelay * 2
-            WinGet ActiveAfter, ID, A
-            if (Active == ActiveAfter) {
-                Send % "{Click}"
+        }
+
+        if (Context & ContextNonEmptyInsertSlot) {
+            switch A_ThisHotkey
+            {
+            case "$e":
+                CloseCurrentMenu()
+                Send % MacroKeys["Edit - Activate/Deactivate"]
+                return
+            case "$+e":
+                CloseCurrentMenu()
+                Send % "^!{Enter}"
+                return
+            case "$s":
+                TrySelectCurrentMenuItem(Menu, "Activate/Deactivate Side-Chaining")
+                return
+            case "$q":
+                TrySelectCurrentMenuItem(Menu, "Switch to A Setting") || TrySelectCurrentMenuItem(Menu, "Switch to B Setting")
+                return
+            case "$+q":
+                TrySelectCurrentMenuItem(Menu, "Apply Current Settings to A and B")
+                return
+            case "$Space":
+                WinGet Active, ID, A
+                CloseCurrentMenu()
+                Send % "!{Click}"
+                Sleep % A_WinDelay * 2
+                WinGet ActiveAfter, ID, A
+                if (Active == ActiveAfter) {
+                    Send % "{Click}"
+                }
+                return
+            case "$+Space":
+                WinGet Active, ID, A
+                CloseCurrentMenu()
+                Send % "!{Click}"
+                Sleep % A_WinDelay * 2
+                WinGet ActiveAfter, ID, A
+                if (Active != ActiveAfter) {
+                    Send % MacroKeys["File - Close"]
+                }
+                return
             }
-            return
-        case "$+Space":
-            WinGet Active, ID, A
-            CloseCurrentMenu()
-            Send % "!{Click}"
-            Sleep % A_WinDelay * 2
-            WinGet ActiveAfter, ID, A
-            if (Active != ActiveAfter) {
-                Send % MacroKeys["File - Close"]
-            }
+
             return
         }
 
