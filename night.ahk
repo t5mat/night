@@ -661,8 +661,8 @@ $^Space::
             case "$Space":
                 WinGet Active, ID, A
                 CloseCurrentMenu()
-                Send % "!{Click}"
-                Sleep % A_WinDelay * 2
+                Send % "{Alt down}{Click}{Alt up}"
+                Sleep % A_WinDelay
                 WinGet ActiveAfter, ID, A
                 if (Active == ActiveAfter) {
                     Send % "{Enter}"
@@ -671,8 +671,8 @@ $^Space::
             case "$+Space":
                 WinGet Active, ID, A
                 CloseCurrentMenu()
-                Send % "!{Click}"
-                Sleep % A_WinDelay * 2
+                Send % "{Alt down}{Click}{Alt up}"
+                Sleep % A_WinDelay
                 WinGet ActiveAfter, ID, A
                 if (Active != ActiveAfter) {
                     Send % MacroKeys["File - Close"]
