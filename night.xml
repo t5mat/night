@@ -1,0 +1,918 @@
+<?xml version="1.0" encoding="utf-8"?>
+<night>
+  <macros>
+    <item>
+      <string name="Name" value="Window Zones - Show Next Page" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Window Zones" />
+          <string name="Name" value="Show Next Page" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Window Zones - Show Previous Page" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Window Zones" />
+          <string name="Name" value="Show Previous Page" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Zoom - Zoom Out Vertically" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Zoom" />
+          <string name="Name" value="Zoom Out Vertically" />
+        </item>
+        <item>
+          <string name="Category" value="Zoom" />
+          <string name="Name" value="Zoom Out Vertically" />
+        </item>
+        <item>
+          <string name="Category" value="Zoom" />
+          <string name="Name" value="Zoom In Vertically" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Zoom - Zoom In Vertically" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Zoom" />
+          <string name="Name" value="Zoom In Vertically" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Zoom - Zoom Out Tracks" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Zoom" />
+          <string name="Name" value="Zoom Out Tracks" />
+        </item>
+        <item>
+          <string name="Category" value="Zoom" />
+          <string name="Name" value="Zoom Out Tracks" />
+        </item>
+        <item>
+          <string name="Category" value="Zoom" />
+          <string name="Name" value="Zoom In Tracks" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Zoom - Zoom In Tracks" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Zoom" />
+          <string name="Name" value="Zoom In Tracks" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Zoom - Zoom Out Of Waveform Vertically" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Zoom" />
+          <string name="Name" value="Zoom Out Of Waveform Vertically" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Zoom - Zoom In On Waveform Vertically" />
+      <string name="Key" value="auto" wide="true" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Zoom" />
+          <string name="Name" value="Zoom In On Waveform Vertically" />
+        </item>
+      </list>
+    </item>
+    <item>
+      <string name="Name" value="Zoom - Zoom Full" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Zoom" />
+          <string name="Name" value="Zoom Full" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Zoom - Zoom to Selection Horizontally" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Zoom" />
+          <string name="Name" value="Zoom to Selection Horizontally" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Zoom Out Horizontally and Vertically" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Zoom" />
+          <string name="Name" value="Zoom Out" />
+        </item>
+        <item>
+          <string name="Category" value="Zoom" />
+          <string name="Name" value="Zoom Out Vertically" />
+        </item>
+        <item>
+          <string name="Category" value="Zoom" />
+          <string name="Name" value="Zoom Out Vertically" />
+        </item>
+        <item>
+          <string name="Category" value="Zoom" />
+          <string name="Name" value="Zoom In Vertically" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Zoom In Horizontally and Vertically" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Zoom" />
+          <string name="Name" value="Zoom In" />
+        </item>
+        <item>
+          <string name="Category" value="Zoom" />
+          <string name="Name" value="Zoom In Vertically" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Editors - Edit In-Place" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Editors" />
+          <string name="Name" value="Edit Inplace" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Project - Folding: Toggle Selected Track" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Project" />
+          <string name="Name" value="Folding: Toggle Selected Track" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Project - Folding: Fold Tracks" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Project" />
+          <string name="Name" value="Folding: Fold Tracks" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Project - Folding: Unfold Tracks" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Project" />
+          <string name="Name" value="Folding: Unfold Tracks" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Clear Selected Tracks" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Automation" />
+          <string name="Name" value="Delete Automation of Selected Tracks" />
+        </item>
+        <item>
+          <string name="Category" value="TrackVersions" />
+          <string name="Name" value="Delete Inactive Versions of Selected Tracks" />
+        </item>
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Select All on Tracks" />
+        </item>
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Delete" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Select All Tracks" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Process Project Logical Editor" />
+          <string name="Name" value="Select All Tracks" />
+        </item>
+        <item>
+          <string name="Category" value="Process Project Logical Editor" />
+          <string name="Name" value="Select All Tracks" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Locate Next Event" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Autoscroll" />
+        </item>
+        <item>
+          <string name="Category" value="Transport" />
+          <string name="Name" value="Locate Next Event" />
+        </item>
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Autoscroll" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Locate Previous Event" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Autoscroll" />
+        </item>
+        <item>
+          <string name="Category" value="Transport" />
+          <string name="Name" value="Locate Previous Event" />
+        </item>
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Autoscroll" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Locate Next Hitpoint" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Autoscroll" />
+        </item>
+        <item>
+          <string name="Category" value="Transport" />
+          <string name="Name" value="Locate Next Hitpoint" />
+        </item>
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Autoscroll" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Locate Previous Hitpoint" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Autoscroll" />
+        </item>
+        <item>
+          <string name="Category" value="Transport" />
+          <string name="Name" value="Locate Previous Hitpoint" />
+        </item>
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Autoscroll" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Locate Next Marker" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Autoscroll" />
+        </item>
+        <item>
+          <string name="Category" value="Transport" />
+          <string name="Name" value="Locate Next Marker" />
+        </item>
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Autoscroll" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Locate Previous Marker" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Autoscroll" />
+        </item>
+        <item>
+          <string name="Category" value="Transport" />
+          <string name="Name" value="Locate Previous Marker" />
+        </item>
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Autoscroll" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Show Lower Zone MixConsole Page 1" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Window Zones" />
+          <string name="Name" value="Show/Hide Lower Zone" />
+        </item>
+        <item>
+          <string name="Category" value="Window Zones" />
+          <string name="Name" value="Show/Hide Lower Zone" />
+        </item>
+        <item>
+          <string name="Category" value="Window Zones" />
+          <string name="Name" value="Show Next Page" />
+        </item>
+        <item>
+          <string name="Category" value="Devices" />
+          <string name="Name" value="MixConsole Lower Zone" />
+        </item>
+        <item>
+          <string name="Category" value="Window Zones" />
+          <string name="Name" value="Show/Hide Lower Zone" />
+        </item>
+        <item>
+          <string name="Category" value="Window Zones" />
+          <string name="Name" value="Show/Hide Lower Zone" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Show Lower Zone MixConsole Page 2" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Window Zones" />
+          <string name="Name" value="Show/Hide Lower Zone" />
+        </item>
+        <item>
+          <string name="Category" value="Window Zones" />
+          <string name="Name" value="Show/Hide Lower Zone" />
+        </item>
+        <item>
+          <string name="Category" value="Window Zones" />
+          <string name="Name" value="Show Next Page" />
+        </item>
+        <item>
+          <string name="Category" value="Devices" />
+          <string name="Name" value="MixConsole Lower Zone" />
+        </item>
+        <item>
+          <string name="Category" value="Window Zones" />
+          <string name="Name" value="Show/Hide Lower Zone" />
+        </item>
+        <item>
+          <string name="Category" value="Window Zones" />
+          <string name="Name" value="Show/Hide Lower Zone" />
+        </item>
+        <item>
+          <string name="Category" value="Window Zones" />
+          <string name="Name" value="Show Next Page" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Show Lower Zone MixConsole Page 3" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Window Zones" />
+          <string name="Name" value="Show/Hide Lower Zone" />
+        </item>
+        <item>
+          <string name="Category" value="Window Zones" />
+          <string name="Name" value="Show/Hide Lower Zone" />
+        </item>
+        <item>
+          <string name="Category" value="Window Zones" />
+          <string name="Name" value="Show Next Page" />
+        </item>
+        <item>
+          <string name="Category" value="Devices" />
+          <string name="Name" value="MixConsole Lower Zone" />
+        </item>
+        <item>
+          <string name="Category" value="Window Zones" />
+          <string name="Name" value="Show/Hide Lower Zone" />
+        </item>
+        <item>
+          <string name="Category" value="Window Zones" />
+          <string name="Name" value="Show/Hide Lower Zone" />
+        </item>
+        <item>
+          <string name="Category" value="Window Zones" />
+          <string name="Name" value="Show Next Page" />
+        </item>
+        <item>
+          <string name="Category" value="Window Zones" />
+          <string name="Name" value="Show Next Page" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Edit - Open/Close Editor" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Open/Close Editor" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Project - Set Track/Event Color" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Project" />
+          <string name="Name" value="Set Track/Event Color" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Colorize Selected Tracks" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Process Project Logical Editor" />
+          <string name="Name" value="Deselect All Events and Parts" />
+        </item>
+        <item>
+          <string name="Category" value="Project" />
+          <string name="Name" value="Set Track/Event Color" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Edit - Delete" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Delete" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Edit - Duplicate" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Duplicate" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Edit - Glue" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Glue" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Edit - Activate/Deactivate" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Activate/Deactivate" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Edit - Mute/Unmute Objects" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Mute/Unmute Objects" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Edit - Select All on Tracks" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Select All on Tracks" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Edit - Repeat" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Repeat" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Edit - To Real Copy" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="To Real Copy" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Edit - Split Range" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Split Range" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Edit - Crop Range" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Crop Range" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Edit - Move to Cursor" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Move to Cursor" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Edit - Edit VST Instrument" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Edit" />
+          <string name="Name" value="Edit VST Instrument" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Dissolve" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Audio" />
+          <string name="Name" value="Dissolve Part" />
+        </item>
+        <item>
+          <string name="Category" value="MIDI" />
+          <string name="Name" value="Dissolve Part" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Render in Place - Render" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Render in Place" />
+          <string name="Name" value="Render" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Render in Place - Render Setup..." />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Render in Place" />
+          <string name="Name" value="Render Setup..." />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="File - Close" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="File" />
+          <string name="Name" value="Close" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="File - Export Selected Tracks" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="File" />
+          <string name="Name" value="Export Selected Tracks" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="File - Export MIDI Loop" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="File" />
+          <string name="Name" value="Export MIDI Loop" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Transport - Locate Selection" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Transport" />
+          <string name="Name" value="Locate Selection" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Transport - Locators to Selection" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Transport" />
+          <string name="Name" value="Locators to Selection" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Close" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="File" />
+          <string name="Name" value="Close" />
+        </item>
+      </list>
+      <string name="Key" value="Esc" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Mixer - HideSelected" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Mixer" />
+          <string name="Name" value="HideSelected" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Mixer - Add Track To Selected: Group Channel" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Mixer" />
+          <string name="Name" value="Add Track To Selected: Group Channel" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Project - Folding: Tracks To Folder" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Project" />
+          <string name="Name" value="Folding: Tracks To Folder" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Audio - Disable/Enable Track" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Audio" />
+          <string name="Name" value="Disable/Enable Track" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Project - Duplicate Tracks" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Project" />
+          <string name="Name" value="Duplicate Tracks" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Project - Remove Selected Tracks" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Project" />
+          <string name="Name" value="Remove Selected Tracks" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="FX Channel to Selected Channels..." />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Mixer" />
+          <string name="Name" value="Add Track To Selected: FX Channel" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Mixer - Add Track To Selected: VCA Fader" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Mixer" />
+          <string name="Name" value="Add Track To Selected: VCA Fader" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Automation - Toggle Write Enable All Tracks" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Automation" />
+          <string name="Name" value="Toggle Write Enable All Tracks" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Audio - Bounce" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Audio" />
+          <string name="Name" value="Bounce" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Audio - Find Selected in Pool" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Audio" />
+          <string name="Name" value="Find Selected in Pool" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="MIDI - Quantize" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="MIDI" />
+          <string name="Name" value="Quantize" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="MIDI - Quantize Ends" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="MIDI" />
+          <string name="Name" value="Quantize Ends" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="MIDI - Quantize Lengths" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="MIDI" />
+          <string name="Name" value="Quantize Lengths" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="MIDI - Undo Quantize" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="MIDI" />
+          <string name="Name" value="Undo Quantize" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="MIDI - Legato" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="MIDI" />
+          <string name="Name" value="Legato" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="Note Expression - Open/Close Editor" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="Note Expression" />
+          <string name="Name" value="Open/Close Editor" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+  </macros>
+  <ple>
+    <item>
+      <string name="Name" value="Select All Tracks" />
+      <!--
+        Event Target Filters =
+          Container Type is - Equal - Track
+          or
+          Container Type is - Equal - Folder Track
+
+        Action = Select
+      -->
+      <Project_Logical_EditorPreset>
+        <bin name="Preset">
+          00400000010000001500000053656C65637420416C6C20547261636B7300EFBB
+          BF0A0000000100000000000A000000010003000000FEFFFFFF120000006C6543
+          6F6E646974696F6E546172676574000000FEFFFFFF080000006C65546F6B656E
+          000000FEFFFFFF09000000436D4F626A656374000000FFFFFFFF160000006C65
+          436F6E7461696E6572547970655461726765740000007E00000064000000C800
+          000000000000FEFFFFFF0A00000055496E7456616C7565000000FEFFFFFF0700
+          00005556616C7565000000FFFFFFFF150000004C65436F6E7461696E65725479
+          706556616C75650000000400000001000000FFFFFFFF0C0000004C6555496E74
+          56616C75650000000C00000000000000FF000000000000005100008004000000
+          68000000760000802C00000064000000C800000000000000CB00008004000000
+          00000000F20000800C00000000000000FF000000000000000000000006000000
+          0100000000000000001100000000000000000000
+        </bin>
+      </Project_Logical_EditorPreset>
+    </item>
+    <item>
+      <string name="Name" value="Deselect All Events and Parts" />
+      <!--
+        Event Target Filters =
+          Container Type is - Equal - Event
+          or
+          Container Type is - Equal - Part
+
+        Action = Deselect
+      -->
+      <Project_Logical_EditorPreset>
+        <bin name="Preset">
+          004000000100000021000000446573656C65637420416C6C204576656E747320
+          616E6420506172747300EFBBBF0A0000000100000000000A0000000100050000
+          00FEFFFFFF09000000436D4F626A656374000000FFFFFFFF080000006C65546F
+          6B656E0000000400000065000000FEFFFFFF120000006C65436F6E646974696F
+          6E546172676574000000FFFFFFFF160000006C65436F6E7461696E6572547970
+          655461726765740000007E00000064000000C800000000000000FEFFFFFF0A00
+          000055496E7456616C7565000000FEFFFFFF070000005556616C7565000000FF
+          FFFFFF150000004C65436F6E7461696E65725479706556616C75650000000400
+          000003000000FFFFFFFF0C0000004C6555496E7456616C75650000000C000000
+          00000000FF000000000000005400008004000000680000008A0000802C000000
+          64000000C800000000000000DF0000800400000002000000060100800C000000
+          00000000FF000000000000005400008004000000660000000000000008000000
+          0100000000000000001100000000000000000000
+        </bin>
+      </Project_Logical_EditorPreset>
+    </item>
+  </ple>
+</night>
