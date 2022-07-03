@@ -191,6 +191,10 @@ ShowUninstall()
 
     Uninstall(KeyCommandsPath, PlePath)
 
+    IniDelete % SettingsPath, % "night", % "AppExePath"
+    IniDelete % SettingsPath, % "night", % "KeyCommandsPath"
+    IniDelete % SettingsPath, % "night", % "PlePath"
+
     MsgBox % (0x0 | 0x40 | 0x40000), % "night", % "night has been uninstalled.`n`n" KeyCommandsPath "`n`n" PlePath
     ExitApp
 }
