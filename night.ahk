@@ -665,7 +665,7 @@ $^Space::
                 Sleep % A_WinDelay * 2
                 WinGet ActiveAfter, ID, A
                 if (Active == ActiveAfter) {
-                    Send % "{Click}"
+                    Send % "{Enter}"
                 }
                 return
             case "$+Space":
