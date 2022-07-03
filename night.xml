@@ -2,6 +2,16 @@
 <night>
   <macros>
     <item>
+      <string name="Name" value="Close" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="File" />
+          <string name="Name" value="Close" />
+        </item>
+      </list>
+      <string name="Key" value="Esc" wide="true" />
+    </item>
+    <item>
       <string name="Name" value="Window Zones - Show Next Page" />
       <list name="Commands" type="list">
         <item>
@@ -676,16 +686,6 @@
         </item>
       </list>
       <string name="Key" value="auto" wide="true" />
-    </item>
-    <item>
-      <string name="Name" value="Close" />
-      <list name="Commands" type="list">
-        <item>
-          <string name="Category" value="File" />
-          <string name="Name" value="Close" />
-        </item>
-      </list>
-      <string name="Key" value="Esc" wide="true" />
     </item>
     <item>
       <string name="Name" value="Mixer - HideSelected" />
