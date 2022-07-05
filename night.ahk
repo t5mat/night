@@ -1051,7 +1051,7 @@ $+q::TrySelectCurrentMenuItem(CurrentMenu, "Apply Current Settings to A and B")
 
 $Space::
     WinGet Active, ID, A
-    CloseCurrentMenuAndSend("{Alt down}{Click}{Alt up}")
+    CloseCurrentMenuAndSend("{Space up}{Alt down}{Click}{Alt up}")
     if (!WaitWindowNotActive("ahk_id " Active, 10, 150)) {
         Send % "{Enter}"
     }
@@ -1059,7 +1059,7 @@ $Space::
 
 $+Space::
     WinGet Active, ID, A
-    CloseCurrentMenuAndSend("{Alt down}{Click}{Alt up}")
+    CloseCurrentMenuAndSend("{Space up}{Alt down}{Click}{Alt up}")
     if (WaitWindowNotActive("ahk_id " Active, 10, 150)) {
         Send % MacroKeys["File - Close"]
     }
