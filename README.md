@@ -158,7 +158,7 @@ These hotkeys work when certain context menus (right-click) are open.
 
 Using key commands is much faster than for example moving the mouse to the arrow that toggles automation lanes, or selecting the a menu item. However, having too many key commands can lead to a complicated and hard-to-remember setup.
 
-These context-based keyboard shortcuts allow for using the same keyboard shortcuts in different contexts, and by that provide more consistency, and reduce the number of global keyboard shortcuts you need to remember. For example, `e` can be toggle track enabled, toggle insert bypass, or toggle send activated all - depending on what you right-clicked.
+These context-based keyboard shortcuts provide a nice benefit compared to global ones: you can use 1 hotkey for multiple actions based on what you right-clicked - track/midi note/audio part... You have the whole keyboard free so hotkeys can match their actions (e = enable, c = colorize, g = glue), which makes them easier to remember. Also, you can have most hotkeys on the left side of the keyboard which makes them more ergonomic to use.
 
 They enable assigning keys to actions that are not available as key commands, and can also utilize information provided by the context menu items that cannot be accessed in macros/PLE (for example, whether automation lanes are shown for any of the selected tracks - this is required for implementing toggle).
 
