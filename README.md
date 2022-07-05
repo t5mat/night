@@ -201,7 +201,7 @@ Some of these don't work in the Inspector.
 - `Space` = open/focus plugin window (will not close if was already open) *does not work if mouse is under the bypass/arrow buttons*
 - `Shift+Space` = close plugin window *does not work if mouse is under the bypass/arrow buttons*
 - `d/Delete/Backspace` = delete insert
-- `r` = replace insert
+- `Tab` = replace insert
 - `e` = toggle insert bypass
 - `Shift+e` = toggle insert activated
 - `f` = set as last pre-fader slot
@@ -214,6 +214,7 @@ Some of these don't work in the Inspector.
 Some of these don't work in the Inspector.
 
 - `d/Delete/Backspace` = clear send
+- `Tab` = replace send
 - `Ctrl+c` = copy send
 - `Ctrl+v` = paste send
 - `e` = toggle send activated

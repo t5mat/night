@@ -1031,7 +1031,7 @@ $d::CloseCurrentMenuAndSend(MacroKeys["Edit - Delete"])
 $Delete::CloseCurrentMenuAndSend(MacroKeys["Edit - Delete"])
 $Backspace::CloseCurrentMenuAndSend(MacroKeys["Edit - Delete"])
 $f::TrySelectCurrentMenuItem(CurrentMenu, "Set as last Pre-Fader Slot")
-$r::CloseCurrentMenuAndSend("!{Enter}")
+$Tab::CloseCurrentMenuAndSend("!{Enter}")
 
 #If
 
@@ -1090,6 +1090,7 @@ $q::
 
 $r::TrySelectCurrentMenuItem(CurrentMenu, "Use Default Send Level")
 $^v::TrySelectCurrentMenuItem(CurrentMenu, "Paste Send")
+$Tab::CloseCurrentMenuAndSend("!{Enter}")
 
 #If
 
