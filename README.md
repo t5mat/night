@@ -164,8 +164,6 @@ They enable assigning keys to actions that are not available as key commands, an
 
 With all that, using these is almost as fast as triggering regular key commands.
 
-Note that all of the default menu keyboard shortcuts in the relevant menus are overridden.
-
 </details>
 
 #### Track context menu
