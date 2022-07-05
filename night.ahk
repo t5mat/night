@@ -241,14 +241,14 @@ CryptStringToBinary(String, ByRef Binary, Flags)
 ;@Ahk2Exe-Bin Unicode 64-bit.bin
 
 ;@Ahk2Exe-SetDescription night
-;@Ahk2Exe-SetFileVersion 1.0.1
+;@Ahk2Exe-SetFileVersion 1.0.2
 ;@Ahk2Exe-SetInternalName night
 ;@Ahk2Exe-SetCopyright https://github.com/t5mat/night
 ;@Ahk2Exe-SetOrigFilename night.exe
 ;@Ahk2Exe-SetProductName night
-;@Ahk2Exe-SetProductVersion 1.0.1
+;@Ahk2Exe-SetProductVersion 1.0.2
 
-global Version := "1.0.1"
+global Version := "1.0.2"
 global Url := "https://github.com/t5mat/night"
 
 #SingleInstance Force
