@@ -20,6 +20,18 @@ RemoveToolTip()
     ToolTip
 }
 
+WaitWindowNotActive(WinTitle, SleepAmount, Timeout)
+{
+    Start := A_TickCount
+    while (WinActive(WinTitle)) {
+        Sleep % SleepAmount
+        if (A_TickCount - Start > Timeout) {
+            return false
+        }
+    }
+    return true
+}
+
 TryFileDialogNavigate(Path, WinTitle)
 {
     ControlGetText RestoreText, Edit1, % WinTitle
@@ -243,6 +255,7 @@ global Url := "https://github.com/t5mat/night"
 
 #MenuMaskKey vkFF
 
+SetWinDelay -1 ; uh oh
 SendMode Event
 
 global MacroPrefix := "~ night - "
@@ -469,15 +482,22 @@ CloseCurrentMenuAndSend(Keys)
     Send % Keys
 }
 
-FocusColorizeWindow()
+WaitFocusColorizeWindow()
 {
+    WinWait % "ahk_group AppColorizeWindow"
     WinActivate % "ahk_group AppColorizeWindow"
+
+    WinGetPos, , , Width, Height, % "ahk_group AppColorizeWindow"
+    if (!Width) {
+        return
+    }
+
     CoordMode Mouse, Screen
     MouseGetPos X, Y
-    WinGetPos, , , Width, Height, % "ahk_group AppColorizeWindow"
 
-    X := Max(50, Min(A_ScreenWidth - 50 - Width, X - Width // 2))
-    Y := Max(50, Min(A_ScreenHeight - 50 - Height, Y - 5))
+    Padding = 50
+    X := Max(Padding, Min(A_ScreenWidth - Padding - Width, X - Width // 2))
+    Y := Max(Padding, Min(A_ScreenHeight - Padding - Height, Y - 5))
 
     WinMove % "ahk_group AppColorizeWindow", , % X, % Y
 }
@@ -937,7 +957,7 @@ $^a::CloseCurrentMenuAndSend(MacroKeys["Select All Tracks"])
 
 $c::
     CloseCurrentMenuAndSend(MacroKeys["Colorize Selected Tracks"])
-    FocusColorizeWindow()
+    WaitFocusColorizeWindow()
     return
 
 $d::CloseCurrentMenuAndSend(MacroKeys["Project - Remove Selected Tracks"])
@@ -1032,9 +1052,7 @@ $+q::TrySelectCurrentMenuItem(CurrentMenu, "Apply Current Settings to A and B")
 $Space::
     WinGet Active, ID, A
     CloseCurrentMenuAndSend("{Alt down}{Click}{Alt up}")
-    Sleep % A_WinDelay
-    WinGet ActiveAfter, ID, A
-    if (Active == ActiveAfter) {
+    if (!WaitWindowNotActive("ahk_id " Active, 10, 150)) {
         Send % "{Enter}"
     }
     return
@@ -1042,9 +1060,7 @@ $Space::
 $+Space::
     WinGet Active, ID, A
     CloseCurrentMenuAndSend("{Alt down}{Click}{Alt up}")
-    Sleep % A_WinDelay
-    WinGet ActiveAfter, ID, A
-    if (Active != ActiveAfter) {
+    if (WaitWindowNotActive("ahk_id " Active, 10, 150)) {
         Send % MacroKeys["File - Close"]
     }
     return
@@ -1139,7 +1155,7 @@ IsMenuContextEditorSelected()
 
 $c::
     CloseCurrentMenuAndSend(MacroKeys["Project - Set Track/Event Color"])
-    FocusColorizeWindow()
+    WaitFocusColorizeWindow()
     return
 
 $e::CloseCurrentMenuAndSend(MacroKeys["Edit - Mute/Unmute Objects"])
