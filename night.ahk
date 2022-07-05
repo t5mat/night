@@ -897,8 +897,7 @@ $F9::
 $F10::
 $F11::
 $F12::
-    Number := SubStr(A_ThisHotkey, 3, 1)
-    IniRead Path, % SettingsPath, % "FileDialogPaths", % "F" Number, % A_Space
+    IniRead Path, % SettingsPath, % "FileDialogPaths", % SubStr(A_ThisHotkey, 2), % A_Space
     if (Path != A_Space && InStr(FileExist(Path), "D")) {
         TryFileDialogNavigate(Path, "A")
     }
