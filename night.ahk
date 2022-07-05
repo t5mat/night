@@ -651,10 +651,10 @@ AutoExec()
     Menu, Tray, Add, % "night " Version, OpenNightUrl
     Menu, Tray, Add, % "Uninstall", ShowUninstall
     Menu, Tray, Add
-    Menu, Tray, Add, % AppName " " ExeVersionInfo.FileVersion, OpenCubase
-    Menu, Tray, Add, % AppName " Program Files", OpenCubaseProgramFiles
-    Menu, Tray, Add, % AppName " AppData", OpenCubaseAppData
-    Menu, Tray, Add, % AppName " Documents", OpenCubaseDocuments
+    Menu, Tray, Add, % AppName " " ExeVersionInfo.FileVersion, OpenApp
+    Menu, Tray, Add, % AppName " Program Files", OpenAppProgramFiles
+    Menu, Tray, Add, % AppName " AppData", OpenAppAppData
+    Menu, Tray, Add, % AppName " Documents", OpenAppDocuments
     Menu, Tray, Add
     Menu, Tray, Add, % "Project Colors Patcher", ShowProjectColorsPatcher
     Menu, Tray, Add
@@ -685,23 +685,23 @@ ShowUninstall()
     ExitApp
 }
 
-OpenCubase()
+OpenApp()
 {
     Run % AppExePath
 }
 
-OpenCubaseProgramFiles()
+OpenAppProgramFiles()
 {
     Run % "explorer.exe /select,""" AppExePath """"
 }
 
-OpenCubaseAppData()
+OpenAppAppData()
 {
     SplitPath KeyCommandsPath, , Path
     Run % Path
 }
 
-OpenCubaseDocuments()
+OpenAppDocuments()
 {
     SplitPath PlePath, , Path
     Run % Path
