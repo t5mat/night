@@ -6,8 +6,8 @@ DetectHiddenWindows On
 SetTitleMatchMode RegEx
 
 GroupAdd CurrentProcess, % "ahk_pid " DllCall("GetCurrentProcessId")
-GroupAdd SystemMenu, % "ahk_class #32768"
-GroupAdd SystemDialog, % "ahk_class #32770"
+GroupAdd SystemMenu, % "ahk_class ^#32768$"
+GroupAdd SystemDialog, % "ahk_class ^#32770$"
 
 ToolTipTimeout(Text, Timeout)
 {
