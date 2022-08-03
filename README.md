@@ -4,13 +4,13 @@
 <img src="https://user-images.githubusercontent.com/16616463/174643141-d9a3db07-3d80-4883-9e69-0783432ef096.gif">
 </p>
 
-**night** is a program (written in AutoHotKey) that enhances Cubase/Nuendo with new hotkeys & functionality.
+**night** is a program (written in AutoHotkey) that enhances Cubase/Nuendo with new hotkeys & functionality.
 
 It overrides almost none of the assignable keyboard shortcut in Cubase/Nuendo; the goal is to provide stuff you cannot configure in Cubase/Nuendo out-of-the-box.
 
 I made this to address some of the workflow limitations I've encountered as I was learning Cubase. I've actually come to rely on night much more than I expected, so I decided to take a bit of time to package and share it.
 
-Don't expect this to be very maintained; rather, it is encouraged you modify night yourself if you want something changed. The code is relatively easy to follow, and with a bit of AutoHotKey knowledge, you can tweak it to fit your preferences or add new functionality.
+Don't expect this to be very maintained; rather, it is encouraged you modify night yourself if you want something changed. The code is relatively easy to follow, and with a bit of AutoHotkey knowledge, you can tweak it to fit your preferences or add new functionality.
 
 **night was built for and tested on Cubase/Nuendo 12.** However, a lot of this stuff should work in older versions too. If you're feeling adventurous, know that the PLE user presets folder has changed, and some features might not work due to context menu changes/certain key commands or PLE features not being available.
 
@@ -90,14 +90,12 @@ Unfortunately, `Ctrl+Alt+Scroll` will horizontally zoom to the cursor/locator, u
 <details>
 <summary>Notes</summary>
 
-<!-- omit in toc -->
 #### Auto-Scroll
 
 These hotkeys toggle auto-scroll, locate, then toggle auto-scroll again, so that the cursor always stays in view after locating (depending on auto-scroll being off when these are used).
 
 The ability to toggle between Page Scroll/Stationary Cursor in Cubase is worth noting here.
 
-<!-- omit in toc -->
 #### Tool Modifiers
 
 `Ctrl+Shift` is the default modifier combination for `Preferences -> Editing -> Tool Modifiers -> Range Tool -> Select Full Vertical`. This is problematic because it also forces this selection to be not snapped, so I use these settings instead:

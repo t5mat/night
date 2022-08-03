@@ -48,20 +48,20 @@ TryFileDialogNavigate(Path, WinTitle)
 
 GetMenuItemCount(Menu)
 {
-    return DllCall("user32\GetMenuItemCount", "Ptr", Menu)
+    return DllCall("GetMenuItemCount", "Ptr", Menu)
 }
 
 GetMenuItemName(Menu, Index)
 {
-    Count := DllCall("user32\GetMenuString", "Ptr", Menu, "UInt", Index, "Ptr", 0, "Int", 0, "UInt", 0x400) + 1
+    Count := DllCall("GetMenuString", "Ptr", Menu, "UInt", Index, "Ptr", 0, "Int", 0, "UInt", 0x400) + 1
     VarSetCapacity(Name, Count << !!A_IsUnicode)
-    DllCall("user32\GetMenuString", "Ptr", Menu, "UInt", Index, "Str", Name, "Int", Count, "UInt", 0x400)
+    DllCall("GetMenuString", "Ptr", Menu, "UInt", Index, "Str", Name, "Int", Count, "UInt", 0x400)
     return Name
 }
 
 GetMenuItemState(Menu, Index)
 {
-    return DllCall("user32\GetMenuState", "Ptr", Menu, "UInt", Index, "UInt", 0x400)
+    return DllCall("GetMenuState", "Ptr", Menu, "UInt", Index, "UInt", 0x400)
 }
 
 FindMenuItemIndex(Menu, Name)
@@ -120,18 +120,24 @@ TrySelectCurrentMenuItem(Menu, Name)
     return true
 }
 
-GetTempFilePath()
+GenerateRandomGuid()
 {
-    static FileSystemObject
-    if (!FileSystemObject) {
-        FileSystemObject := ComObjCreate("Scripting.FileSystemObject")
+    return ComObjCreate("Scriptlet.TypeLib").GUID
+}
+
+CreateTempFilePath()
+{
+    loop {
+        Path := A_Temp "\" GenerateRandomGuid()
+        if (!FileExist(Path)) {
+            return Path
+        }
     }
-    return FileSystemObject.GetTempName()
 }
 
 HashFile(Path, Algorithm)
 {
-    OutputPath := GetTempFilePath()
+    OutputPath := CreateTempFilePath()
     Shell := ComObjCreate("WScript.Shell")
     Shell.Run("cmd /c certutil -hashfile """ Path """ " Algorithm " >" OutputPath, 0, true)
     FileRead Output, % "*P65001 " OutputPath
@@ -566,7 +572,7 @@ AutoExec()
         FileRead XmlData, % "*P65001 " XmlPath
         XmlHash := HashFile(XmlPath, "MD5")
     } else {
-        XmlPath := GetTempFilePath()
+        XmlPath := CreateTempFilePath()
         FileInstall night.xml, % XmlPath, true
 
         FileRead XmlData, % "*P65001 " XmlPath
@@ -610,7 +616,7 @@ AutoExec()
     IniRead KeyCommandsPath, % SettingsPath, % "night", % "KeyCommandsPath", % A_Space
     if (KeyCommandsPath == A_Space || !FileExist(KeyCommandsPath)) {
         Path := A_AppData "\Steinberg"
-        loop files, % A_AppData "\Steinberg\*", D
+        loop files, % Path "\*", D
         {
             if (InStr(A_LoopFileName, ExeVersionInfo.FileDescription)) {
                 Path := A_LoopFilePath "\Key Commands.xml"
@@ -678,8 +684,8 @@ AutoExec()
     Menu, Tray, Add
     Menu, Tray, Add, % "Project Colors Patcher", ShowProjectColorsPatcher
     Menu, Tray, Add
-    Menu, Tray, Add, % "AutoHotKey " A_AhkVersion, TrayMenuStub
-    Menu, Tray, Disable, % "AutoHotKey " A_AhkVersion
+    Menu, Tray, Add, % "AutoHotkey " A_AhkVersion, TrayMenuStub
+    Menu, Tray, Disable, % "AutoHotkey " A_AhkVersion
     Menu, Tray, Standard
 }
 
@@ -868,7 +874,7 @@ $Escape::
     }
 
     Send % "{Escape down}"
-    KeyWait Escape
+    KeyWait % "Escape"
     Send % "{Escape up}"
     return
 
@@ -878,7 +884,7 @@ global InSpaceWriteAutomation := false
 $Space::
     InSpace := true
     Send % "{Space}"
-    KeyWait Space
+    KeyWait % "Space"
     InSpace := false
 
     if (InSpaceWriteAutomation) {
