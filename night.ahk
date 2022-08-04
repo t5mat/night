@@ -591,7 +591,7 @@ AutoExec()
 
     IniRead AppExePath, % SettingsPath, % "night", % "AppExePath", % A_Space
     if (AppExePath == A_Space || !FileExist(AppExePath)) {
-        FileSelectFile AppExePath, 3, % A_ProgramFiles "\Steinberg", % "Select your Cubase.exe/Nuendo.exe file"
+        FileSelectFile AppExePath, 3, % A_ProgramFiles "\Steinberg", % "Select your Cubase.exe/Nuendo.exe file", % "Executable Files (*.exe)"
         if (ErrorLevel != 0) {
             ExitApp
         }
@@ -624,7 +624,7 @@ AutoExec()
             }
         }
 
-        FileSelectFile KeyCommandsPath, 3, % Path, % "Select your Key Commands.xml file"
+        FileSelectFile KeyCommandsPath, 3, % Path, % "Select your Key Commands.xml file", % "XML Files (*.xml)"
         if (ErrorLevel != 0) {
             ExitApp
         }
@@ -745,7 +745,7 @@ ShowProjectColorsPatcher()
         return
     }
 
-    FileSelectFile ColorsPath, 3, % A_ScriptDir "\colors", % "Project Colors Patcher - select a colors file"
+    FileSelectFile ColorsPath, 3, % A_ScriptDir "\colors", % "Project Colors Patcher - select a colors file", % "Colors Files (*.ini)"
     if (ErrorLevel != 0) {
         return
     }
