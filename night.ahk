@@ -1,3 +1,5 @@
+#SingleInstance Force
+#MenuMaskKey vkFF
 #NoEnv
 
 if (!A_IsUnicode || A_PtrSize != 8) {
@@ -11,15 +13,30 @@ GroupAdd CurrentProcess, % "ahk_pid " DllCall("GetCurrentProcessId")
 GroupAdd SystemMenu, % "ahk_class ^#32768$"
 GroupAdd SystemDialog, % "ahk_class ^#32770$"
 
-ToolTipTimeout(Text, Timeout)
+ReadFileUtf8(Path)
 {
-    ToolTip % Text
-    SetTimer RemoveToolTip, % -Timeout
+    FileRead Data, % "*P65001 " Path
+    return Data
+}
+
+ConsumeFileUtf8(Path)
+{
+    Data := ReadFileUtf8(Path)
+    FileDelete % Path
+    return Data
 }
 
 RemoveToolTip()
 {
     ToolTip
+}
+
+ToolTip(Text, Timeout := 0)
+{
+    ToolTip % Text
+    if (Timeout) {
+        SetTimer RemoveToolTip, % -Timeout
+    }
 }
 
 WaitWindowNotActive(WinTitle, SleepAmount, Timeout)
@@ -171,9 +188,7 @@ HashFile(Path, Algorithm)
     OutputPath := CreateTempFilePath()
     Shell := ComObjCreate("WScript.Shell")
     Shell.Run("cmd /c certutil -hashfile """ Path """ " Algorithm " >" OutputPath, 0, true)
-    FileRead Output, % "*P65001 " OutputPath
-    FileDelete % OutputPath
-    return StrSplit(Output, "`n", "`r", 3)[2]
+    return StrSplit(ConsumeFileUtf8(OutputPath), "`n", "`r", 3)[2]
 }
 
 LoadXml(String)
@@ -182,7 +197,7 @@ LoadXml(String)
     Xml.setProperty("SelectionLanguage", "XPath")
     Xml.async := false
     if (!Xml.loadXML(String)) {
-        return false
+        return
     }
     return Xml
 }
@@ -351,13 +366,6 @@ ShellOpenFolderAndSelect(Path, Paths, Flags)
 global Version := "1.0.2"
 global Url := "https://github.com/t5mat/night"
 
-#SingleInstance Force
-
-#MenuMaskKey vkFF
-
-SetWinDelay -1 ; uh oh
-SendMode Event
-
 global MacroPrefix := "~ night - "
 global PleFolderName := "night"
 global HashMacroPrefix := "~ night "
@@ -462,7 +470,7 @@ InstallHashMacro(Hash, KeyCommandsXml)
 
 Uninstall(KeyCommandsPath, PlePath)
 {
-    FileRead KeyCommandsData, % "*P65001 " KeyCommandsPath
+    KeyCommandsData := ReadFileUtf8(KeyCommandsPath)
 
     if ((KeyCommandsXml := LoadXml(KeyCommandsData))) {
         UninstallKeyCommands(KeyCommandsXml)
@@ -660,19 +668,19 @@ global LocateMode
 
 AutoExec()
 {
+    SetWinDelay -1 ; uh oh
+    SendMode Event
+
     if (!A_IsCompiled) {
         XmlPath := A_ScriptDir "\night.xml"
 
-        FileRead XmlData, % "*P65001 " XmlPath
         XmlHash := HashFile(XmlPath, "MD5")
+        XmlData := ReadFileUtf8(XmlPath)
     } else {
-        XmlPath := CreateTempFilePath()
-        FileInstall night.xml, % XmlPath, true
+        FileInstall night.xml, % (XmlPath := CreateTempFilePath()), true
 
-        FileRead XmlData, % "*P65001 " XmlPath
         XmlHash := HashFile(XmlPath, "MD5")
-
-        FileDelete % XmlPath
+        XmlData := ConsumeFileUtf8(XmlPath)
     }
 
     if (!(Xml := LoadXml(XmlData))) {
@@ -734,7 +742,7 @@ AutoExec()
         IniWrite % PlePath, % SettingsPath, % "night", % "PlePath"
     }
 
-    FileRead KeyCommandsData, % "*P65001 " KeyCommandsPath
+    KeyCommandsData := ReadFileUtf8(KeyCommandsPath)
 
     if (!(KeyCommandsXml := LoadXml(KeyCommandsData)) || !IsValidKeyCommandsXml(KeyCommandsXml)) {
         MsgBox % (0x0 | 0x10 | 0x40000), % "night", % "Could not load key commands file:`n" KeyCommandsPath
@@ -749,7 +757,7 @@ AutoExec()
 
         Uninstall(KeyCommandsPath, PlePath)
 
-        FileRead KeyCommandsData, % "*P65001 " KeyCommandsPath
+        KeyCommandsData := ReadFileUtf8(KeyCommandsPath)
         KeyCommandsXml := LoadXml(KeyCommandsData)
 
         InstallKeyCommands(Xml, KeyCommandsXml)
@@ -924,7 +932,7 @@ $^+!WheelUp::Send % MacroKeys["Zoom - Zoom In On Waveform Vertically"]
 
 $^+MButton::
     LocateMode := Mod(LocateMode, 3) + 1
-    ToolTipTimeout("locate mode: " LocateModes[LocateMode], 1250)
+    ToolTip("locate mode: " LocateModes[LocateMode], 1250)
     return
 
 $^+WheelDown::
@@ -1212,8 +1220,8 @@ $f::TrySelectCurrentMenuItem(CurrentMenu, "Move to Pre-Fader") || TrySelectCurre
 
 $q::
     CloseCurrentMenuAndSend("{Enter}")
-    ControlSetText Edit1, % "-oo", A
-    ControlSend Edit1, % "{Enter}", A
+    ControlSetText % "Edit1", % "-oo", A
+    ControlSend % "Edit1", % "{Enter}", A
     return
 
 $r::TrySelectCurrentMenuItem(CurrentMenu, "Use Default Send Level")

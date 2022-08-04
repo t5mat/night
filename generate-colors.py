@@ -5,8 +5,10 @@ import configparser
 from matplotlib import pyplot as plt
 
 
-TOTAL = 32
-GREYS = 8
+TOTAL_COUNT = 32
+
+FIXED_COUNT = 8
+FIXED_COLORMAP = 'binary_r'
 
 COLORMAPS = [
     'CMRmap',
@@ -25,9 +27,9 @@ COLORMAPS = [
 def main():
     path = Path.cwd()
     for colormap in COLORMAPS:
-        colors = generate_colormap_colors('binary_r', GREYS) + generate_colormap_colors(colormap, TOTAL - GREYS)
+        colors = generate_colormap_colors(FIXED_COLORMAP, FIXED_COUNT) + generate_colormap_colors(colormap, TOTAL_COUNT - FIXED_COUNT)
 
-        filename = f'{TOTAL}-{colormap}.ini'
+        filename = f'{TOTAL_COUNT}-{colormap}.ini'
         data = generate_colors_file_contents(colors)
         (path / filename).write_text(data, newline='')
 

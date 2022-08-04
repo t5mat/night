@@ -12,7 +12,7 @@ I made this to address some of the workflow limitations I've encountered as I wa
 
 Don't expect this to be very maintained; rather, it is encouraged you modify night yourself if you want something changed. The code is relatively easy to follow, and with a bit of AutoHotkey knowledge, you can tweak it to fit your preferences or add new functionality.
 
-**night was built for and tested on Cubase/Nuendo 12.** However, a lot of this stuff should work in older versions too. If you're feeling adventurous, know that the PLE user presets folder has changed, and some features might not work due to context menu changes/certain key commands or PLE features not being available.
+**night was built for and tested on Cubase/Nuendo 12.** However, a lot of this should work in earlier versions too. If you're feeling adventurous, know that the PLE user presets folder has changed, and some features might not work due to context menu changes/certain key commands or PLE features not being available.
 
 </details>
 
