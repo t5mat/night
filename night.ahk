@@ -244,6 +244,62 @@ CryptStringToBinary(String, ByRef Binary, Flags)
     return Size
 }
 
+ShellFindPathPidl(Path)
+{
+    ; no way im doing THAT one
+    ; https://en.delphipraxis.net/topic/4827-parse-pidl-from-name-located-on-portable-device/
+    ; https://stackoverflow.com/questions/42966489/how-to-use-shcreateitemfromparsingname-with-names-from-the-shell-namespace
+    ; https://stackoverflow.com/questions/27593315/how-can-i-iterate-across-the-photos-on-my-connected-iphone-from-windows-7-in-pyt
+
+    for Item in ComObjCreate("Shell.Application").NameSpace(0x0).Items {
+        if (InStr(Item.Path, "::{", true) == 1 && Item.Name == Path) {
+            ParsePath := "shell:" Item.Path
+            break
+        }
+    }
+
+    if (!ParsePath) {
+        static SpecialFolders := Object("Desktop", "shell:::{b4bfcc3a-db2c-424c-b029-7fe99a87c641}"
+            , "Documents", "shell:::{a8cdff1c-4878-43be-b5fd-f8091c1c60d0}"
+            , "Downloads", "shell:::{374de290-123f-4565-9164-39c4925e467b}"
+            , "Music", "shell:::{1cf1260c-4dd0-4ebb-811f-33c572699fde}"
+            , "Pictures", "shell:::{3add1653-eb32-4cb0-bbd7-dfa0abb5acca}"
+            , "Public", "shell:::{4336a54d-038b-4685-ab02-99bb52d3fb8b}"
+            , "Recycle Bin", "shell:::{645ff040-5081-101b-9f08-00aa002f954e}"
+            , "This PC", "shell:::{20d04fe0-3aea-1069-a2d8-08002b30309d}")
+
+        ParsePath := SpecialFolders[Path]
+    }
+
+    if (!ParsePath) {
+        ParsePath := Path
+        if (SubStr(ParsePath, 0, 1) != "\") {
+            ParsePath := ParsePath "\"
+        }
+    }
+
+    DllCall("shell32\SHParseDisplayName", "Str", ParsePath, "Ptr", 0, "Ptr*", Pidl, "UInt", 0, "UInt*", 0)
+    return Pidl
+}
+
+ShellOpenFolderAndSelect(Path, Paths, Flags)
+{
+    PathsCount := Paths.Count()
+
+    PathPidl := ShellFindPathPidl(Path)
+    VarSetCapacity(PathsPidls, PathsCount * A_PtrSize, 0)
+    loop % Paths.Count() {
+        NumPut(ShellFindPathPidl(Paths[A_Index]), PathsPidls, (A_Index - 1) * A_PtrSize)
+    }
+
+    DllCall("shell32\SHOpenFolderAndSelectItems", "Ptr", PathPidl, "UInt", PathsCount, "Ptr", &PathsPidls, "Int", Flags)
+
+    DllCall("ole32\CoTaskMemFree", "Ptr", PathPidl)
+    loop % Paths.Count() {
+        DllCall("ole32\CoTaskMemFree", "Ptr", NumGet(PathsPidls, (A_Index - 1) * A_PtrSize))
+    }
+}
+
 ;@Ahk2Exe-Bin Unicode 64-bit.bin
 
 ;@Ahk2Exe-SetDescription night
@@ -718,19 +774,20 @@ OpenApp()
 
 OpenAppProgramFiles()
 {
-    Run % "explorer.exe /select,""" AppExePath """"
+    SplitPath AppExePath, , Path
+    ShellOpenFolderAndSelect(Path, [AppExePath], 0)
 }
 
 OpenAppAppData()
 {
     SplitPath KeyCommandsPath, , Path
-    Run % Path
+    ShellOpenFolderAndSelect(Path, [Path], 0)
 }
 
 OpenAppDocuments()
 {
     SplitPath PlePath, , Path
-    Run % Path
+    ShellOpenFolderAndSelect(Path, [Path], 0)
 }
 
 ShowProjectColorsPatcher()
