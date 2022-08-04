@@ -264,25 +264,16 @@ These pair well with disabling `Preferences -> Editing -> Tools -> Show Toolbox 
 
 ### File Dialogs
 
-Pressing `F1-F12` in a file dialog inside Cubase will navigate to bookmarked folders.
+In file dialogs, you can quickly navigate to your favorite folders using `F1-F12`.
 
-To set your bookmarked folders, open `night.ini` and add a `[FileDialogPaths]` section. For the following example:
-
-```ini
-[FileDialogPaths]
-F1 = C:\Users\<user>\Documents\Cubase Projects
-F2 = C:\Users\<user>\Documents\Steinberg
-F3 = C:\Users\<user>\AppData\Roaming\Steinberg
-```
-
-pressing `F1` will navigate to `C:\Users\<user>\Documents\Cubase Projects`, and so on.
+To save the current folder as a favorite, use `Shift+F1-F12`.
 
 <details>
 <summary>Notes</summary>
 
 This can be used to quickly navigate to your projects folder in the Open Project dialog, or to your PLE presets folder when saving PLE presets.
 
-Also, track archives, for example, are useful sometimes compared to track presets because they can store whole folder tracks and correct routing information between tracks. However, unlike track presets, track archives are not indexed in the MediaBay - when you import a track archive you get the Windows "Choose a file" dialog. And so, a quick way to navigate to where you store your track archives might be beneficial.
+Also, track archives, for example, are useful sometimes compared to track presets because they can store whole folder tracks and correct routing information between tracks. However, unlike track presets, track archives are not indexed in the MediaBay - when you import a track archive you get the Windows "Choose a file" dialog. And so a quick way to navigate to where you store your track archives might be beneficial.
 
 </details>
 

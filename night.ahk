@@ -1,3 +1,5 @@
+#NoEnv
+
 if (!A_IsUnicode || A_PtrSize != 8) {
     ExitApp
 }
@@ -32,18 +34,47 @@ WaitWindowNotActive(WinTitle, SleepAmount, Timeout)
     return true
 }
 
-TryFileDialogNavigate(Path, WinTitle)
+GetFocusedControl(WinTitle)
 {
-    ControlGetText RestoreText, Edit1, % WinTitle
-    if ErrorLevel {
+    ControlGetFocus Focus, % WinTitle
+    return Focus
+}
+
+WaitFocusedControl(ControlPattern, WinTitle, SleepAmount, Timeout)
+{
+    Start := A_TickCount
+    while (true) {
+        if ((Focus := GetFocusedControl(WinTitle)) ~= ControlPattern) {
+            return Focus
+        }
+
+        if (A_TickCount - Start >= Timeout) {
+            return
+        }
+
+        Sleep % SleepAmount
+    }
+}
+
+FileDialogActiveGetFolderPath(Hwnd)
+{
+    SendPlay % "^{l}"
+    if (!(Focus := WaitFocusedControl("^Edit2$", "ahk_id " Hwnd, 5, 1000))) {
         return
     }
+    ControlGetText Path, % Focus, % "ahk_id " Hwnd
+    ControlSend % Focus, % "{Escape}", % "ahk_id " Hwnd
+    return Path
+}
 
-    ControlFocus Edit1, % WinTitle
-    ControlSetText Edit1, % Path, % WinTitle
-    ControlSend Edit1, % "{Enter}", % WinTitle
-    ControlFocus Edit1, % WinTitle
-    ControlSetText Edit1, % RestoreText, % WinTitle
+FileDialogNavigate(Path, Hwnd)
+{
+    SendPlay % "!{n}"
+    if (!(Focus := WaitFocusedControl("^Edit1$", "ahk_id " Hwnd, 5, 1000))) {
+        return
+    }
+    ControlSetText % Focus, % """" Path """", % "ahk_id " Hwnd
+    SendPlay % "{Enter}{Delete}"
 }
 
 GetMenuItemCount(Menu)
@@ -244,7 +275,7 @@ CryptStringToBinary(String, ByRef Binary, Flags)
     return Size
 }
 
-ShellFindPathPidl(Path)
+ShellParseDisplayName(Path)
 {
     ; no way im doing THAT one
     ; https://en.delphipraxis.net/topic/4827-parse-pidl-from-name-located-on-portable-device/
@@ -253,12 +284,12 @@ ShellFindPathPidl(Path)
 
     for Item in ComObjCreate("Shell.Application").NameSpace(0x0).Items {
         if (InStr(Item.Path, "::{", true) == 1 && Item.Name == Path) {
-            ParsePath := "shell:" Item.Path
+            DisplayName := "shell:" Item.Path
             break
         }
     }
 
-    if (!ParsePath) {
+    if (!DisplayName) {
         static SpecialFolders := Object("Desktop", "shell:::{b4bfcc3a-db2c-424c-b029-7fe99a87c641}"
             , "Documents", "shell:::{a8cdff1c-4878-43be-b5fd-f8091c1c60d0}"
             , "Downloads", "shell:::{374de290-123f-4565-9164-39c4925e467b}"
@@ -268,28 +299,35 @@ ShellFindPathPidl(Path)
             , "Recycle Bin", "shell:::{645ff040-5081-101b-9f08-00aa002f954e}"
             , "This PC", "shell:::{20d04fe0-3aea-1069-a2d8-08002b30309d}")
 
-        ParsePath := SpecialFolders[Path]
+        DisplayName := SpecialFolders[Path]
     }
 
-    if (!ParsePath) {
-        ParsePath := Path
-        if (SubStr(ParsePath, 0, 1) != "\") {
-            ParsePath := ParsePath "\"
+    if (!DisplayName) {
+        DisplayName := Path
+        if (SubStr(DisplayName, 0, 1) != "\") {
+            DisplayName := DisplayName "\"
         }
     }
 
-    DllCall("shell32\SHParseDisplayName", "Str", ParsePath, "Ptr", 0, "Ptr*", Pidl, "UInt", 0, "UInt*", 0)
+    DllCall("shell32\SHParseDisplayName", "Str", DisplayName, "Ptr", 0, "Ptr*", Pidl, "UInt", 0, "UInt*", 0)
     return Pidl
+}
+
+ShellGetPidlPath(Pidl)
+{
+    VarSetCapacity(Path, 512)
+    DllCall("shell32\SHGetPathFromIDListW", "UInt", Pidl, "Str", Path)
+    return Path
 }
 
 ShellOpenFolderAndSelect(Path, Paths, Flags)
 {
     PathsCount := Paths.Count()
 
-    PathPidl := ShellFindPathPidl(Path)
+    PathPidl := ShellParseDisplayName(Path)
     VarSetCapacity(PathsPidls, PathsCount * A_PtrSize, 0)
     loop % Paths.Count() {
-        NumPut(ShellFindPathPidl(Paths[A_Index]), PathsPidls, (A_Index - 1) * A_PtrSize)
+        NumPut(ShellParseDisplayName(Paths[A_Index]), PathsPidls, (A_Index - 1) * A_PtrSize)
     }
 
     DllCall("shell32\SHOpenFolderAndSelectItems", "Ptr", PathPidl, "UInt", PathsCount, "Ptr", &PathsPidls, "Int", Flags)
@@ -981,9 +1019,36 @@ $F10::
 $F11::
 $F12::
     IniRead Path, % SettingsPath, % "FileDialogPaths", % SubStr(A_ThisHotkey, 2), % A_Space
-    if (Path != A_Space && InStr(FileExist(Path), "D")) {
-        TryFileDialogNavigate(Path, "A")
+    if (Path == A_Space) {
+        return
     }
+
+    Pidl := ShellParseDisplayName(Path)
+    if (!Pidl) {
+        return
+    }
+
+    Path := ShellGetPidlPath(Pidl)
+    DllCall("ole32\CoTaskMemFree", "Ptr", Pidl)
+
+    FileDialogNavigate(Path, WinExist("A"))
+
+    return
+
+$+F1::
+$+F2::
+$+F3::
+$+F4::
+$+F5::
+$+F6::
+$+F7::
+$+F8::
+$+F9::
+$+F10::
+$+F11::
+$+F12::
+    Path := FileDialogActiveGetFolderPath(WinExist("A"))
+    IniWrite % Path, % SettingsPath, % "FileDialogPaths", % SubStr(A_ThisHotkey, 3)
     return
 
 #If
