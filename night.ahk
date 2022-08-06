@@ -9,38 +9,44 @@ if (!A_IsUnicode || A_PtrSize != 8) {
 DetectHiddenWindows On
 SetTitleMatchMode RegEx
 
-GroupAdd CurrentProcess, % "ahk_pid " DllCall("GetCurrentProcessId")
-GroupAdd SystemMenu, % "ahk_class ^#32768$"
-GroupAdd SystemDialog, % "ahk_class ^#32770$"
-
-ReadFileUtf8(Path)
-{
+ReadFileUtf8(Path) {
     FileRead Data, % "*P65001 " Path
     return Data
 }
 
-ConsumeFileUtf8(Path)
-{
+ConsumeFileUtf8(Path) {
     Data := ReadFileUtf8(Path)
     FileDelete % Path
     return Data
 }
 
-RemoveToolTip()
-{
+RemoveToolTip() {
     ToolTip
 }
 
-ToolTip(Text, Timeout := 0)
-{
+ToolTip(Text, Timeout := 0) {
     ToolTip % Text
     if (Timeout) {
         SetTimer RemoveToolTip, % -Timeout
     }
 }
 
-WaitWindowNotActive(WinTitle, SleepAmount, Timeout)
-{
+WaitWindowExist(WinTitle, SleepAmount, Timeout) {
+    Start := A_TickCount
+    while (true) {
+        if (Hwnd := WinExist(WinTitle)) {
+            return Hwnd
+        }
+
+        if (A_TickCount - Start >= Timeout) {
+            return
+        }
+
+        Sleep % SleepAmount
+    }
+}
+
+WaitWindowNotActive(WinTitle, SleepAmount, Timeout) {
     Start := A_TickCount
     while (WinActive(WinTitle)) {
         Sleep % SleepAmount
@@ -51,14 +57,12 @@ WaitWindowNotActive(WinTitle, SleepAmount, Timeout)
     return true
 }
 
-GetFocusedControl(WinTitle)
-{
+GetFocusedControl(WinTitle) {
     ControlGetFocus Focus, % WinTitle
     return Focus
 }
 
-WaitFocusedControl(ControlPattern, WinTitle, SleepAmount, Timeout)
-{
+WaitFocusedControl(ControlPattern, WinTitle, SleepAmount, Timeout) {
     Start := A_TickCount
     while (true) {
         if ((Focus := GetFocusedControl(WinTitle)) ~= ControlPattern) {
@@ -73,8 +77,7 @@ WaitFocusedControl(ControlPattern, WinTitle, SleepAmount, Timeout)
     }
 }
 
-FileDialogActiveGetFolderPath(Hwnd)
-{
+FileDialogActiveGetFolderPath(Hwnd) {
     SendPlay % "^{l}"
     if (!(Focus := WaitFocusedControl("^Edit2$", "ahk_id " Hwnd, 5, 1000))) {
         return
@@ -84,8 +87,7 @@ FileDialogActiveGetFolderPath(Hwnd)
     return Path
 }
 
-FileDialogNavigate(Path, Hwnd)
-{
+FileDialogNavigate(Path, Hwnd) {
     SendPlay % "!{n}"
     if (!(Focus := WaitFocusedControl("^Edit1$", "ahk_id " Hwnd, 5, 1000))) {
         return
@@ -94,26 +96,24 @@ FileDialogNavigate(Path, Hwnd)
     SendPlay % "{Enter}{Delete}"
 }
 
-GetMenuItemCount(Menu)
-{
-    return DllCall("GetMenuItemCount", "Ptr", Menu)
+global MenuTitle := "ahk_class ^#32768$"
+
+GetMenuItemCount(Menu) {
+    return DllCall("GetMenuItemCount", "Ptr", Menu, "Int")
 }
 
-GetMenuItemName(Menu, Index)
-{
-    Count := DllCall("GetMenuString", "Ptr", Menu, "UInt", Index, "Ptr", 0, "Int", 0, "UInt", 0x400) + 1
+GetMenuItemName(Menu, Index) {
+    Count := DllCall("GetMenuString", "Ptr", Menu, "UInt", Index, "Ptr", 0, "Int", 0, "UInt", 0x400, "Int") + 1
     VarSetCapacity(Name, Count << !!A_IsUnicode)
     DllCall("GetMenuString", "Ptr", Menu, "UInt", Index, "Str", Name, "Int", Count, "UInt", 0x400)
     return Name
 }
 
-GetMenuItemState(Menu, Index)
-{
-    return DllCall("GetMenuState", "Ptr", Menu, "UInt", Index, "UInt", 0x400)
+GetMenuItemState(Menu, Index) {
+    return DllCall("GetMenuState", "Ptr", Menu, "UInt", Index, "UInt", 0x400, "UInt")
 }
 
-FindMenuItemIndex(Menu, Name)
-{
+FindMenuItemIndex(Menu, Name) {
     loop % GetMenuItemCount(Menu) {
         CurrentName := GetMenuItemName(Menu, A_Index - 1)
         CurrentName := StrSplit(StrReplace(CurrentName, "&"), "`t", , 2)[1]
@@ -124,32 +124,27 @@ FindMenuItemIndex(Menu, Name)
     return -1
 }
 
-GetCurrentMenu()
-{
-    SendMessage 0x1e1, , , , % "ahk_group SystemMenu"
+GetCurrentMenu() {
+    SendMessage 0x1e1, , , , % MenuTitle
     if (ErrorLevel == "FAIL") {
         return false
     }
     return ErrorLevel
 }
 
-CloseCurrentMenu()
-{
-    SendMessage 0x1e6, , , , % "ahk_group SystemMenu"
+CloseCurrentMenu() {
+    SendMessage 0x1e6, , , , % MenuTitle
 }
 
-OpenCurrentSubMenu(Index)
-{
-    SendMessage 0x1ed, % Index, 0, , % "ahk_group SystemMenu"
+OpenCurrentSubMenu(Index) {
+    SendMessage 0x1ed, % Index, 0, , % MenuTitle
 }
 
-SelectCurrentMenuItem(Index)
-{
-    PostMessage 0x1f1, % Index, 0, , % "ahk_group SystemMenu"
+SelectCurrentMenuItem(Index) {
+    PostMessage 0x1f1, % Index, 0, , % MenuTitle
 }
 
-TryOpenCurrentSubMenu(Menu, Name)
-{
+TryOpenCurrentSubMenu(Menu, Name) {
     Index := FindMenuItemIndex(Menu, Name)
     if (Index == -1) {
         return false
@@ -158,8 +153,7 @@ TryOpenCurrentSubMenu(Menu, Name)
     return true
 }
 
-TrySelectCurrentMenuItem(Menu, Name)
-{
+TrySelectCurrentMenuItem(Menu, Name) {
     Index := FindMenuItemIndex(Menu, Name)
     if (Index == -1) {
         return false
@@ -168,13 +162,13 @@ TrySelectCurrentMenuItem(Menu, Name)
     return true
 }
 
-GenerateRandomGuid()
-{
+global DialogTitle := "ahk_class ^#32770$"
+
+GenerateRandomGuid() {
     return ComObjCreate("Scriptlet.TypeLib").GUID
 }
 
-CreateTempFilePath()
-{
+CreateTempFilePath() {
     loop {
         Path := A_Temp "\" GenerateRandomGuid()
         if (!FileExist(Path)) {
@@ -183,16 +177,14 @@ CreateTempFilePath()
     }
 }
 
-HashFile(Path, Algorithm)
-{
+HashFile(Path, Algorithm) {
     OutputPath := CreateTempFilePath()
     Shell := ComObjCreate("WScript.Shell")
     Shell.Run("cmd /c certutil -hashfile """ Path """ " Algorithm " >" OutputPath, 0, true)
     return StrSplit(ConsumeFileUtf8(OutputPath), "`n", "`r", 3)[2]
 }
 
-LoadXml(String)
-{
+LoadXml(String) {
     Xml := ComObjCreate("MSXML2.DOMDocument.6.0")
     Xml.setProperty("SelectionLanguage", "XPath")
     Xml.async := false
@@ -202,11 +194,10 @@ LoadXml(String)
     return Xml
 }
 
-GetFileVersionInfo(Path, Fields)
-{
+GetFileVersionInfo(Path, Fields) {
     ; https://www.autohotkey.com/boards/viewtopic.php?p=46622#p46622
 
-    Size := DllCall("version\GetFileVersionInfoSize", "Str", Path, "Ptr", 0)
+    Size := DllCall("version\GetFileVersionInfoSize", "Str", Path, "Ptr", 0, "UInt")
     Size := VarSetCapacity(Data, Size + A_PtrSize)
     DllCall("version\GetFileVersionInfo", "Str", Path, "UInt", 0, "UInt", Size, "Ptr", &Data)
     DllCall("version\VerQueryValue", "Ptr", &Data, "Str", "\VarFileInfo\Translation", "PtrP", VersionInfo, "PtrP", VersionInfoSize)
@@ -214,15 +205,14 @@ GetFileVersionInfo(Path, Fields)
     Info := {}
     loop parse, % Fields, % A_Space
     {
-        if (DllCall("version\VerQueryValue", "Ptr", &Data, "Str", "\StringFileInfo\" Language "\" A_LoopField, "PtrP", VersionInfo, "PtrP", VersionInfoSize)) {
+        if (DllCall("version\VerQueryValue", "Ptr", &Data, "Str", "\StringFileInfo\" Language "\" A_LoopField, "PtrP", VersionInfo, "PtrP", VersionInfoSize, "Int")) {
             Info[A_LoopField] := StrGet(VersionInfo, VersionInfoSize)
         }
     }
     return Info
 }
 
-MapFile(FileHandle, ByRef Address)
-{
+MapFile(FileHandle, ByRef Address) {
     Mapping := DllCall("CreateFileMapping", "Ptr", FileHandle, "Ptr", 0, "Int", 0x4, "Int", 0, "Int", 0, "Ptr", 0, "Ptr")
     if (!Mapping) {
         return false
@@ -237,14 +227,12 @@ MapFile(FileHandle, ByRef Address)
     return Mapping
 }
 
-UnmapFile(Mapping, Address)
-{
+UnmapFile(Mapping, Address) {
     DllCall("UnmapViewOfFile", "Ptr", Address)
     DllCall("CloseHandle", "Ptr", Mapping)
 }
 
-SearchBytesInBytes(Address, Count, SearchAddress, SearchCount)
-{
+SearchBytesInBytes(Address, Count, SearchAddress, SearchCount) {
     static Bin
     if (!VarSetCapacity(Bin)) {
         ; https://www.autohotkey.com/boards/viewtopic.php?t=90318
@@ -255,43 +243,39 @@ SearchBytesInBytes(Address, Count, SearchAddress, SearchCount)
     return DllCall(&Bin, "Ptr", Address, "Int", Count, "Ptr", SearchAddress, "Short", SearchCount, "Int", 1, "Int", 1, "CDecl Ptr")
 }
 
-CryptUtf8ToString(String, Flags)
-{
+CryptUtf8ToString(String, Flags) {
     VarSetCapacity(Binary, StrPut(String, "UTF-8"))
     Size := StrPut(String, &Binary, "UTF-8") - 1
     return CryptBinaryToString(&Binary, Size, Flags)
 }
 
-CryptBinaryToString(Binary, Size, Flags)
-{
-    if (!DllCall("crypt32\CryptBinaryToString", "Ptr", Binary, "UInt", Size, "UInt", Flags, "Ptr", 0, "UIntP", Count)) {
+CryptBinaryToString(Binary, Size, Flags) {
+    if (!DllCall("crypt32\CryptBinaryToString", "Ptr", Binary, "UInt", Size, "UInt", Flags, "Ptr", 0, "UIntP", Count, "Int")) {
         return false
     }
 
     VarSetCapacity(String, Count << !!A_IsUnicode)
-    if (!DllCall("crypt32\CryptBinaryToString", "Ptr", Binary, "UInt", Size, "UInt", Flags, "Ptr", &String, "UIntP", Count)) {
+    if (!DllCall("crypt32\CryptBinaryToString", "Ptr", Binary, "UInt", Size, "UInt", Flags, "Ptr", &String, "UIntP", Count, "Int")) {
         return false
     }
 
     return StrGet(&String)
 }
 
-CryptStringToBinary(String, ByRef Binary, Flags)
-{
-    if (!DllCall("crypt32\CryptStringToBinary", "Str", String, "UInt", 0, "UInt", Flags, "Ptr", 0, "UIntP", Size, "UInt", 0, "UInt", 0)) {
+CryptStringToBinary(String, ByRef Binary, Flags) {
+    if (!DllCall("crypt32\CryptStringToBinary", "Str", String, "UInt", 0, "UInt", Flags, "Ptr", 0, "UIntP", Size, "UInt", 0, "UInt", 0, "Int")) {
         return false
     }
 
     VarSetCapacity(Binary, Size)
-    if (!DllCall("crypt32\CryptStringToBinary", "Str", String, "UInt", 0, "UInt", Flags, "Ptr", &Binary, "UIntP", Size, "UInt", 0, "UInt", 0)) {
+    if (!DllCall("crypt32\CryptStringToBinary", "Str", String, "UInt", 0, "UInt", Flags, "Ptr", &Binary, "UIntP", Size, "UInt", 0, "UInt", 0, "Int")) {
         return false
     }
 
     return Size
 }
 
-ShellParseDisplayName(Path)
-{
+ShellParseDisplayName(Path) {
     ; no way im doing THAT one
     ; https://en.delphipraxis.net/topic/4827-parse-pidl-from-name-located-on-portable-device/
     ; https://stackoverflow.com/questions/42966489/how-to-use-shcreateitemfromparsingname-with-names-from-the-shell-namespace
@@ -328,15 +312,13 @@ ShellParseDisplayName(Path)
     return Pidl
 }
 
-ShellGetPidlPath(Pidl)
-{
+ShellGetPidlPath(Pidl) {
     VarSetCapacity(Path, 512)
     DllCall("shell32\SHGetPathFromIDListW", "UInt", Pidl, "Str", Path)
     return Path
 }
 
-ShellOpenFolderAndSelect(Path, Paths, Flags)
-{
+ShellOpenFolderAndSelect(Path, Paths, Flags) {
     PathsCount := Paths.Count()
 
     PathPidl := ShellParseDisplayName(Path)
@@ -351,6 +333,66 @@ ShellOpenFolderAndSelect(Path, Paths, Flags)
     loop % Paths.Count() {
         DllCall("ole32\CoTaskMemFree", "Ptr", NumGet(PathsPidls, (A_Index - 1) * A_PtrSize))
     }
+}
+
+global ContextTrack := (1 << 0)
+global ContextFolderTrack := (1 << 1)
+global ContextTrackListTrack := (1 << 2)
+global ContextInsertSlot := (1 << 3)
+global ContextNonEmptyInsertSlot := (1 << 4)
+global ContextSendSlot := (1 << 5)
+global ContextInsertsRack := (1 << 6)
+global ContextSendsRack := (1 << 7)
+global ContextEditor := (1 << 8)
+global ContextKeyEditor := (1 << 9)
+global ContextSelected := (1 << 10)
+global ContextSelectedAudio := (1 << 11)
+global ContextSelectedMidi := (1 << 12)
+
+FindAppMenuContext(Menu) {
+    Context := 0
+
+    if (FindMenuItemIndex(Menu, "Copy First Selected Channel's Settings") != -1) {
+        Context |= ContextTrack
+    } else if (FindMenuItemIndex(Menu, "Select All Events") != -1) {
+        Context |= ContextTrack | ContextTrackListTrack
+        if (FindMenuItemIndex(Menu, "Show Data on Folder Tracks") != -1) {
+            Context |= ContextFolderTrack
+        }
+    } else if (FindMenuItemIndex(Menu, "Set as last Pre-Fader Slot") != -1) {
+        Context |= ContextInsertSlot
+        if (FindMenuItemIndex(Menu, "Load Preset...") != -1) {
+            Context |= ContextNonEmptyInsertSlot
+        }
+    } else if (FindMenuItemIndex(Menu, "Clear Send") != -1) {
+        Context |= ContextSendSlot
+    } else if (FindMenuItemIndex(Menu, "Bypass") != -1 && FindMenuItemIndex(Menu, "Copy") != -1 && FindMenuItemIndex(Menu, "Paste") != -1 && FindMenuItemIndex(Menu, "Clear") != -1) {
+        if (FindMenuItemIndex(Menu, "Load FX Chain Preset...") != -1) {
+            Context |= ContextInsertsRack
+        } else {
+            Context |= ContextSendsRack
+        }
+    } else if ((Tools := FindMenuItemIndex(Menu, "Tools")) != -1) {
+        Context |= ContextEditor
+        if ((ZoomToSelection := FindMenuItemIndex(Menu, "Zoom to Selection")) == -1 || GetMenuItemState(Menu, ZoomToSelection) & 0x2) {
+            if (FindMenuItemIndex(Menu, "Functions") != -1) {
+                Context |= ContextKeyEditor
+            }
+        } else {
+            Context |= ContextSelected
+            if (FindMenuItemIndex(Menu, "Create Sampler Track") != -1) {
+                Context |= ContextSelectedAudio
+            } else if (FindMenuItemIndex(Menu, "Processes") != -1) {
+                Context |= ContextSelectedAudio
+            } else if (FindMenuItemIndex(Menu, "Export MIDI Loop...") != -1) {
+                Context |= ContextSelectedMidi
+            } else if (FindMenuItemIndex(Menu, "Open Note Expression Editor") != -1) {
+                Context |= ContextKeyEditor | ContextSelectedMidi
+            }
+        }
+    }
+
+    return Context
 }
 
 ;@Ahk2Exe-Bin Unicode 64-bit.bin
@@ -370,18 +412,49 @@ global MacroPrefix := "~ night - "
 global PleFolderName := "night"
 global HashMacroPrefix := "~ night "
 
-IsValidKeyCommandsXml(KeyCommandsXml)
-{
+global LocateModes := ["events", "hitpoints", "markers"]
+
+global SelfTitle := "ahk_pid " DllCall("GetCurrentProcessId", "UInt")
+
+global SettingsPath
+global AppExePath
+global AppName
+global KeyCommandsPath
+global PlePath
+
+global AppTitle
+global AppTitleBarTitle
+global AppWindowTitle
+global AppProjectWindowTitle
+global AppColorizeWindowTitle
+
+global MacroKeys
+
+global MaxMenuTime := 500
+global MenuTime
+global Hwnd
+global Menu
+global Context
+global HandleMenuHotkeyTimer
+
+global MixConsolePage := 1
+global LocateMode := 1
+global InSpace := false
+global InSpaceWriteAutomation := false
+
+AutoExec()
+
+return
+
+IsValidKeyCommandsXml(KeyCommandsXml) {
     return KeyCommandsXml.selectSingleNode("/KeyCommands/list[@name='Categories']") && KeyCommandsXml.selectSingleNode("/KeyCommands/list[@name='Macros']")
 }
 
-IsInstalled(Hash, KeyCommandsXml)
-{
+IsInstalled(Hash, KeyCommandsXml) {
     return !!KeyCommandsXml.selectSingleNode("/KeyCommands/list[@name='Macros']/item/string[@name='Name' and @value='" HashMacroPrefix Hash "']")
 }
 
-InstallKeyCommands(Xml, KeyCommandsXml)
-{
+InstallKeyCommands(Xml, KeyCommandsXml) {
     static NextAutoKey := Chr(0xA500)
 
     Commands := KeyCommandsXml.selectSingleNode("/KeyCommands/list[@name='Categories']/item/string[@name='Name' and @value='Macro']/../list[@name='Commands']")
@@ -440,8 +513,7 @@ InstallKeyCommands(Xml, KeyCommandsXml)
     }
 }
 
-InstallPle(Xml, PlePath)
-{
+InstallPle(Xml, PlePath) {
     FileCreateDir % PlePath "\" PleFolderName
 
     for Ple in Xml.selectNodes("/night/ple/item") {
@@ -455,8 +527,7 @@ InstallPle(Xml, PlePath)
     }
 }
 
-InstallHashMacro(Hash, KeyCommandsXml)
-{
+InstallHashMacro(Hash, KeyCommandsXml) {
     Name := KeyCommandsXml.createElement("string")
     Name.setAttribute("name", "Name")
     Name.setAttribute("value", HashMacroPrefix Hash)
@@ -468,8 +539,7 @@ InstallHashMacro(Hash, KeyCommandsXml)
     Macros.appendChild(Item)
 }
 
-Uninstall(KeyCommandsPath, PlePath)
-{
+Uninstall(KeyCommandsPath, PlePath) {
     KeyCommandsData := ReadFileUtf8(KeyCommandsPath)
 
     if ((KeyCommandsXml := LoadXml(KeyCommandsData))) {
@@ -482,8 +552,7 @@ Uninstall(KeyCommandsPath, PlePath)
     UninstallPle(PlePath)
 }
 
-UninstallKeyCommands(KeyCommandsXml)
-{
+UninstallKeyCommands(KeyCommandsXml) {
     Macros := KeyCommandsXml.selectSingleNode("/KeyCommands/list[@name='Macros']")
     for Macro in Macros.selectNodes("item") {
         Name := Macro.selectSingleNode("string[@name='Name']").getAttribute("value")
@@ -501,13 +570,11 @@ UninstallKeyCommands(KeyCommandsXml)
     }
 }
 
-UninstallPle(PlePath)
-{
+UninstallPle(PlePath) {
     FileRemoveDir % PlePath "\" PleFolderName, true
 }
 
-LoadMacroKeys(KeyCommandsXml)
-{
+LoadMacroKeys(KeyCommandsXml) {
     Keys := []
 
     Commands := KeyCommandsXml.selectSingleNode("/KeyCommands/list[@name='Categories']/item/string[@name='Name' and @value='Macro']/../list[@name='Commands']")
@@ -523,79 +590,14 @@ LoadMacroKeys(KeyCommandsXml)
     return Keys
 }
 
-global ContextTrack := (1 << 0)
-global ContextFolderTrack := (1 << 1)
-global ContextTrackListTrack := (1 << 2)
-global ContextInsertSlot := (1 << 3)
-global ContextNonEmptyInsertSlot := (1 << 4)
-global ContextSendSlot := (1 << 5)
-global ContextInsertsRack := (1 << 6)
-global ContextSendsRack := (1 << 7)
-global ContextEditor := (1 << 8)
-global ContextKeyEditor := (1 << 9)
-global ContextSelected := (1 << 10)
-global ContextSelectedAudio := (1 << 11)
-global ContextSelectedMidi := (1 << 12)
-
-FindContextFromMenu(Menu)
-{
-    Context := 0
-
-    if (FindMenuItemIndex(Menu, "Copy First Selected Channel's Settings") != -1) {
-        Context |= ContextTrack
-    } else if (FindMenuItemIndex(Menu, "Select All Events") != -1) {
-        Context |= ContextTrack | ContextTrackListTrack
-        if (FindMenuItemIndex(Menu, "Show Data on Folder Tracks") != -1) {
-            Context |= ContextFolderTrack
-        }
-    } else if (FindMenuItemIndex(Menu, "Set as last Pre-Fader Slot") != -1) {
-        Context |= ContextInsertSlot
-        if (FindMenuItemIndex(Menu, "Load Preset...") != -1) {
-            Context |= ContextNonEmptyInsertSlot
-        }
-    } else if (FindMenuItemIndex(Menu, "Clear Send") != -1) {
-        Context |= ContextSendSlot
-    } else if (FindMenuItemIndex(Menu, "Bypass") != -1 && FindMenuItemIndex(Menu, "Copy") != -1 && FindMenuItemIndex(Menu, "Paste") != -1 && FindMenuItemIndex(Menu, "Clear") != -1) {
-        if (FindMenuItemIndex(Menu, "Load FX Chain Preset...") != -1) {
-            Context |= ContextInsertsRack
-        } else {
-            Context |= ContextSendsRack
-        }
-    } else if ((Tools := FindMenuItemIndex(Menu, "Tools")) != -1) {
-        Context |= ContextEditor
-        if ((ZoomToSelection := FindMenuItemIndex(Menu, "Zoom to Selection")) == -1 || GetMenuItemState(Menu, ZoomToSelection) & 0x2) {
-            if (FindMenuItemIndex(Menu, "Functions") != -1) {
-                Context |= ContextKeyEditor
-            }
-        } else {
-            Context |= ContextSelected
-            if (FindMenuItemIndex(Menu, "Create Sampler Track") != -1) {
-                Context |= ContextSelectedAudio
-            } else if (FindMenuItemIndex(Menu, "Processes") != -1) {
-                Context |= ContextSelectedAudio
-            } else if (FindMenuItemIndex(Menu, "Export MIDI Loop...") != -1) {
-                Context |= ContextSelectedMidi
-            } else if (FindMenuItemIndex(Menu, "Open Note Expression Editor") != -1) {
-                Context |= ContextKeyEditor | ContextSelectedMidi
-            }
-        }
+WaitFocusColorizeWindow() {
+    if (!(Hwnd := WaitWindowExist(AppColorizeWindowTitle, 5, 1000))) {
+        return
     }
 
-    return Context
-}
+    WinActivate % "ahk_id " Hwnd
 
-CloseCurrentMenuAndSend(Keys)
-{
-    CloseCurrentMenu()
-    Send % Keys
-}
-
-WaitFocusColorizeWindow()
-{
-    WinWait % "ahk_group AppColorizeWindow"
-    WinActivate % "ahk_group AppColorizeWindow"
-
-    WinGetPos, , , Width, Height, % "ahk_group AppColorizeWindow"
+    WinGetPos, , , Width, Height, % "ahk_id " Hwnd
     if (!Width) {
         return
     }
@@ -607,11 +609,10 @@ WaitFocusColorizeWindow()
     X := Max(Padding, Min(A_ScreenWidth - Padding - Width, X - Width // 2))
     Y := Max(Padding, Min(A_ScreenHeight - Padding - Height, Y - 5))
 
-    WinMove % "ahk_group AppColorizeWindow", , % X, % Y
+    WinMove % "ahk_id " Hwnd, , % X, % Y
 }
 
-PatchProjectColors(ProjectPath, ColorsPath)
-{
+PatchProjectColors(ProjectPath, ColorsPath) {
     if (!(File := FileOpen(ProjectPath, "a")) || !(Mapping := MapFile(File.__Handle, Address))) {
         return false
     }
@@ -655,21 +656,84 @@ PatchProjectColors(ProjectPath, ColorsPath)
     return Patched
 }
 
-global LocateModes := ["events", "hitpoints", "markers"]
+OpenNightUrl() {
+    Run % Url
+}
 
-global SettingsPath
-global AppExePath
-global AppName
-global KeyCommandsPath
-global PlePath
-global MacroKeys
-global MixConsolePage
-global LocateMode
+ShowUninstall() {
+    if (WinActive(AppTitle)) {
+        MsgBox % (0x0 | 0x30 | 0x40000), % "night", % "Please close " AppName " before uninstalling night."
+        return
+    }
 
-AutoExec()
-{
-    SetWinDelay -1 ; uh oh
-    SendMode Event
+    Uninstall(KeyCommandsPath, PlePath)
+
+    IniDelete % SettingsPath, % "night", % "AppExePath"
+    IniDelete % SettingsPath, % "night", % "KeyCommandsPath"
+    IniDelete % SettingsPath, % "night", % "PlePath"
+
+    MsgBox % (0x0 | 0x40 | 0x40000), % "night", % "night has been uninstalled.`n`n" KeyCommandsPath "`n`n" PlePath
+    ExitApp
+}
+
+OpenApp() {
+    Run % AppExePath
+}
+
+OpenAppProgramFiles() {
+    SplitPath AppExePath, , Path
+    ShellOpenFolderAndSelect(Path, [AppExePath], 0)
+}
+
+OpenAppAppData() {
+    SplitPath KeyCommandsPath, , Path
+    ShellOpenFolderAndSelect(Path, [Path], 0)
+}
+
+OpenAppDocuments() {
+    SplitPath PlePath, , Path
+    ShellOpenFolderAndSelect(Path, [Path], 0)
+}
+
+ShowProjectColorsPatcher() {
+    if (WinExist(AppProjectWindowTitle)) {
+        MsgBox % (0x0 | 0x30 | 0x40000), % "Project Colors Patcher", % "Please close all " AppName " projects before using the Project Colors Patcher."
+        return
+    }
+
+    FileSelectFile ProjectPaths, M3, , % "Project Colors Patcher - select project files (BACK THEM UP FIRST)", % "Cubase/Nuendo Project Files (*.cpr; *.npr)"
+    if (ErrorLevel != 0) {
+        return
+    }
+
+    FileSelectFile ColorsPath, 3, % A_ScriptDir "\colors", % "Project Colors Patcher - select a colors file", % "Colors Files (*.ini)"
+    if (ErrorLevel != 0) {
+        return
+    }
+
+    loop parse, ProjectPaths, `n
+    {
+        if (A_Index == 1) {
+            Path := A_LoopField
+            continue
+        }
+
+        ProjectPath := Path "\" A_LoopField
+        if (Patched := PatchProjectColors(ProjectPath, ColorsPath)) {
+            MsgBox % (0x0 | 0x40 | 0x40000), % "Project Colors Patcher", % "Patched " Patched " color" (Patched == 1 ? "" : "s") " in:`n" ProjectPath
+        } else {
+            MsgBox % (0x0 | 0x10 | 0x40000), % "Project Colors Patcher", % "Error patching:`n" ProjectPath
+        }
+    }
+}
+
+TrayMenuStub() {
+}
+
+AutoExec() {
+    SetControlDelay -1
+    SetWinDelay -1
+    SetBatchLines -1
 
     if (!A_IsCompiled) {
         XmlPath := A_ScriptDir "\night.xml"
@@ -708,13 +772,6 @@ AutoExec()
         ExitApp
     }
 
-    AppExe := "ahk_exe i)^\Q" AppExePath "\E$"
-    GroupAdd AppExe, % AppExe
-    GroupAdd AppTitleBar, % AppExe " ahk_class ^SmtgMain " App
-    GroupAdd AppWindow, % AppExe " ahk_class ^SteinbergWindowClass$"
-    GroupAdd AppProjectWindow, % "^" AppName "( .*?)? Project - .*$ " AppExe
-    GroupAdd AppColorizeWindow, % "^Colorize$ " AppExe
-
     IniRead KeyCommandsPath, % SettingsPath, % "night", % "KeyCommandsPath", % A_Space
     if (KeyCommandsPath == A_Space || !FileExist(KeyCommandsPath)) {
         Path := A_AppData "\Steinberg"
@@ -749,8 +806,14 @@ AutoExec()
         ExitApp
     }
 
+    AppTitle := "ahk_exe i)^\Q" AppExePath "\E$"
+    AppTitleBarTitle := AppTitle " ahk_class ^SmtgMain"
+    AppWindowTitle := AppTitle " ahk_class ^SteinbergWindowClass$"
+    AppProjectWindowTitle := "^" AppName "( .*?)? Project - .*$ " AppTitle
+    AppColorizeWindowTitle := "^Colorize$ " AppTitle
+
     if (!IsInstalled(XmlHash, KeyCommandsXml)) {
-        if (WinExist("ahk_group AppExe")) {
+        if (WinActive(AppTitle)) {
             MsgBox % (0x0 | 0x30 | 0x40000), % "night", % "night is not installed. Please close " AppName " and run night again to install."
             ExitApp
         }
@@ -772,9 +835,6 @@ AutoExec()
 
     MacroKeys := LoadMacroKeys(KeyCommandsXml)
 
-    MixConsolePage := 1
-    LocateMode := 1
-
     Menu, Tray, NoStandard
     Menu, Tray, Add, % "night " Version, OpenNightUrl
     Menu, Tray, Add, % "Uninstall", ShowUninstall
@@ -791,144 +851,131 @@ AutoExec()
     Menu, Tray, Standard
 }
 
-OpenNightUrl()
-{
-    Run % Url
+IsMenuTime() {
+    return (MenuTime && A_TickCount - MenuTime <= MaxMenuTime)
 }
 
-ShowUninstall()
-{
-    if (WinExist("ahk_group AppExe")) {
-        MsgBox % (0x0 | 0x30 | 0x40000), % "night", % "Please close " AppName " before uninstalling night."
+IsMenu() {
+    return ((Menu := GetCurrentMenu()) || IsMenuTime())
+}
+
+HandleMenuHotkeyTimerTick(TestFunc, HandleFunc, MenuTime) {
+    if (%TestFunc%()) {
+        SetTimer % HandleMenuHotkeyTimer, Off
+        HandleMenuHotkeyTimer :=
+        %HandleFunc%()
         return
     }
 
-    Uninstall(KeyCommandsPath, PlePath)
-
-    IniDelete % SettingsPath, % "night", % "AppExePath"
-    IniDelete % SettingsPath, % "night", % "KeyCommandsPath"
-    IniDelete % SettingsPath, % "night", % "PlePath"
-
-    MsgBox % (0x0 | 0x40 | 0x40000), % "night", % "night has been uninstalled.`n`n" KeyCommandsPath "`n`n" PlePath
-    ExitApp
-}
-
-OpenApp()
-{
-    Run % AppExePath
-}
-
-OpenAppProgramFiles()
-{
-    SplitPath AppExePath, , Path
-    ShellOpenFolderAndSelect(Path, [AppExePath], 0)
-}
-
-OpenAppAppData()
-{
-    SplitPath KeyCommandsPath, , Path
-    ShellOpenFolderAndSelect(Path, [Path], 0)
-}
-
-OpenAppDocuments()
-{
-    SplitPath PlePath, , Path
-    ShellOpenFolderAndSelect(Path, [Path], 0)
-}
-
-ShowProjectColorsPatcher()
-{
-    if (WinExist("ahk_group AppWindow")) {
-        MsgBox % (0x0 | 0x30 | 0x40000), % "Project Colors Patcher", % "Please close all " AppName " projects before using the Project Colors Patcher."
+    if (A_TickCount - MenuTime > 1000) {
+        SetTimer % HandleMenuHotkeyTimer, Off
+        HandleMenuHotkeyTimer :=
         return
     }
-
-    FileSelectFile ProjectPaths, M3, , % "Project Colors Patcher - select project files (BACK THEM UP FIRST)", % "Cubase/Nuendo Project Files (*.cpr; *.npr)"
-    if (ErrorLevel != 0) {
-        return
-    }
-
-    FileSelectFile ColorsPath, 3, % A_ScriptDir "\colors", % "Project Colors Patcher - select a colors file", % "Colors Files (*.ini)"
-    if (ErrorLevel != 0) {
-        return
-    }
-
-    loop parse, ProjectPaths, `n
-    {
-        if (A_Index == 1) {
-            Path := A_LoopField
-            continue
-        }
-
-        ProjectPath := Path "\" A_LoopField
-        if (Patched := PatchProjectColors(ProjectPath, ColorsPath)) {
-            MsgBox % (0x0 | 0x40 | 0x40000), % "Project Colors Patcher", % "Patched " Patched " color" (Patched == 1 ? "" : "s") " in:`n" ProjectPath
-        } else {
-            MsgBox % (0x0 | 0x10 | 0x40000), % "Project Colors Patcher", % "Error patching:`n" ProjectPath
-        }
-    }
 }
 
-TrayMenuStub()
-{
+HandleMenuHotkey(TestFunc, HandleFunc) {
+    if (HandleMenuHotkeyTimer) {
+        SetTimer % HandleMenuHotkeyTimer, Off
+        HandleMenuHotkeyTimer :=
+    }
+
+    if (Menu) {
+        return true
+    }
+
+    HandleMenuHotkeyTimer := Func("HandleMenuHotkeyTimerTick").Bind(TestFunc, HandleFunc, MenuTime)
+    SetTimer % HandleMenuHotkeyTimer, 5
 }
 
-AutoExec()
+IsActiveAppWindow() {
+    return WinExist("ahk_id " (Hwnd := WinExist("A")) " " AppWindowTitle)
+}
 
-return
+IsActiveLowerZoneMixConsole() {
+    return WinExist("ahk_id " (Hwnd := WinExist("A")) " " AppProjectWindowTitle) && GetKeyState("XButton2", "P")
+}
 
-IsActiveAppWindow()
-{
-    return WinActive("ahk_group AppWindow")
+IsActiveAppNotMenu() {
+    return WinExist("ahk_id " (Hwnd := WinExist("A")) " " AppTitle) && !GetCurrentMenu()
+}
+
+IsActiveDialog() {
+    Hwnd := WinExist("A")
+    return (WinExist("ahk_id " Hwnd " " AppTitle) || WinExist("ahk_id " Hwnd " " SelfTitle)) && WinExist("ahk_id " Hwnd " " DialogTitle)
+}
+
+IsActiveAppMenu() {
+    return WinExist("ahk_id " (Hwnd := WinExist("A")) " " AppTitle) && IsMenu()
 }
 
 #If IsActiveAppWindow()
 
 $XButton1::
-    WinActivate % "ahk_group AppProjectWindow"
-    Send % MacroKeys["Show Lower Zone MixConsole Page " MixConsolePage] MacroKeys["Edit - Open/Close Editor"]
+    if (!(Hwnd := WinExist(AppProjectWindowTitle))) {
+        return
+    }
+    WinActivate % "ahk_id " Hwnd
+    SendEvent % MacroKeys["Show Lower Zone MixConsole Page " MixConsolePage] MacroKeys["Edit - Open/Close Editor"]
     return
 
 $XButton2::
-    WinActivate % "ahk_group AppProjectWindow"
-    Send % MacroKeys["Show Lower Zone MixConsole Page " MixConsolePage]
+    if (!(Hwnd := WinExist(AppProjectWindowTitle))) {
+        return
+    }
+    WinActivate % "ahk_id " Hwnd
+    SendEvent % MacroKeys["Show Lower Zone MixConsole Page " MixConsolePage]
     return
-
-#If
-
-IsActiveLowerZoneMixConsole()
-{
-    return WinActive("ahk_group AppProjectWindow") && GetKeyState("XButton2", "P")
-}
 
 #If IsActiveLowerZoneMixConsole()
 
 $WheelDown::
-    Send % MacroKeys["Window Zones - Show Next Page"]
     if (MixConsolePage < 3) {
         MixConsolePage += 1
     }
+    SendEvent % MacroKeys["Window Zones - Show Next Page"]
     return
 
 $WheelUp::
-    Send % MacroKeys["Window Zones - Show Previous Page"]
     if (MixConsolePage > 1) {
         MixConsolePage -= 1
     }
+    SendEvent % MacroKeys["Window Zones - Show Previous Page"]
     return
-
-#If
 
 #If IsActiveAppWindow()
 
-$!WheelDown::Send % MacroKeys["Zoom - Zoom Out Vertically"]
-$!WheelUp::Send % MacroKeys["Zoom - Zoom In Vertically"]
-$^!WheelDown::Send % MacroKeys["Zoom Out Horizontally and Vertically"]
-$^!WheelUp::Send % MacroKeys["Zoom In Horizontally and Vertically"]
-$+WheelDown::Send % MacroKeys["Zoom - Zoom Out Tracks"]
-$+WheelUp::Send % MacroKeys["Zoom - Zoom In Tracks"]
-$^+!WheelDown::Send % MacroKeys["Zoom - Zoom Out Of Waveform Vertically"]
-$^+!WheelUp::Send % MacroKeys["Zoom - Zoom In On Waveform Vertically"]
+$!WheelDown::
+    SendEvent % MacroKeys["Zoom - Zoom Out Vertically"]
+    return
+
+$!WheelUp::
+    SendEvent % MacroKeys["Zoom - Zoom In Vertically"]
+    return
+
+$^!WheelDown::
+    SendEvent % MacroKeys["Zoom Out Horizontally and Vertically"]
+    return
+
+$^!WheelUp::
+    SendEvent % MacroKeys["Zoom In Horizontally and Vertically"]
+    return
+
+$+WheelDown::
+    SendEvent % MacroKeys["Zoom - Zoom Out Tracks"]
+    return
+
+$+WheelUp::
+    SendEvent % MacroKeys["Zoom - Zoom In Tracks"]
+    return
+
+$^+!WheelDown::
+    SendEvent % MacroKeys["Zoom - Zoom Out Of Waveform Vertically"]
+    return
+
+$^+!WheelUp::
+    SendEvent % MacroKeys["Zoom - Zoom In On Waveform Vertically"]
+    return
 
 $^+MButton::
     LocateMode := Mod(LocateMode, 3) + 1
@@ -938,61 +985,51 @@ $^+MButton::
 $^+WheelDown::
     switch (LocateMode) {
     case 1:
-        Send % MacroKeys["Locate Next Event"]
+        SendEvent % MacroKeys["Locate Next Event"]
     case 2:
-        Send % MacroKeys["Locate Next Hitpoint"]
+        SendEvent % MacroKeys["Locate Next Hitpoint"]
     case 3:
-        Send % MacroKeys["Locate Next Marker"]
+        SendEvent % MacroKeys["Locate Next Marker"]
     }
     return
 
 $^+WheelUp::
     switch (LocateMode) {
     case 1:
-        Send % MacroKeys["Locate Previous Event"]
+        SendEvent % MacroKeys["Locate Previous Event"]
     case 2:
-        Send % MacroKeys["Locate Previous Hitpoint"]
+        SendEvent % MacroKeys["Locate Previous Hitpoint"]
     case 3:
-        Send % MacroKeys["Locate Previous Marker"]
+        SendEvent % MacroKeys["Locate Previous Marker"]
     }
     return
 
-#If
-
-IsActiveAppExeNonMenu()
-{
-    return WinActive("ahk_group AppExe") && !GetCurrentMenu()
-}
-
-#If IsActiveAppExeNonMenu()
+#If IsActiveAppNotMenu()
 
 $Escape::
-    if (WinActive("ahk_group AppProjectWindow")) {
+    if (WinActive(AppProjectWindowTitle) || WinActive(AppTitleBarTitle) && WinExist(AppProjectWindowTitle)) {
         return
     }
 
-    if (WinActive("ahk_group AppTitleBar") || WinActive("ahk_group AppColorizeWindow")) {
+    if (WinActive(AppTitleBarTitle) || WinActive(AppColorizeWindowTitle)) {
         WinClose A
         return
     }
 
-    Send % "{Escape down}"
+    SendEvent % "{Escape down}"
     KeyWait % "Escape"
-    Send % "{Escape up}"
+    SendEvent % "{Escape up}"
     return
-
-global InSpace := false
-global InSpaceWriteAutomation := false
 
 $Space::
     InSpace := true
-    Send % "{Space}"
+    SendEvent % "{Space}"
     KeyWait % "Space"
     InSpace := false
 
     if (InSpaceWriteAutomation) {
         InSpaceWriteAutomation := false
-        Send % "{Space}" MacroKeys["Automation - Toggle Write Enable All Tracks"]
+        SendEvent % "{Space}" MacroKeys["Automation - Toggle Write Enable All Tracks"]
     }
 
     return
@@ -1000,17 +1037,10 @@ $Space::
 ~*LButton::
     if (InSpace && !InSpaceWriteAutomation) {
         InSpaceWriteAutomation := true
-        Send % MacroKeys["Automation - Toggle Write Enable All Tracks"]
+        SendEvent % MacroKeys["Automation - Toggle Write Enable All Tracks"]
     }
 
     return
-
-#If
-
-IsActiveDialog()
-{
-    return (WinActive("ahk_group AppExe") || WinActive("ahk_group CurrentProcess")) && WinActive("ahk_group SystemDialog")
-}
 
 #If IsActiveDialog()
 
@@ -1026,22 +1056,22 @@ $F9::
 $F10::
 $F11::
 $F12::
-    IniRead Path, % SettingsPath, % "FileDialogPaths", % SubStr(A_ThisHotkey, 2), % A_Space
-    if (Path == A_Space) {
-        return
+    HandleDialogFButton() {
+        IniRead Path, % SettingsPath, % "FileDialogPaths", % SubStr(A_ThisHotkey, 2), % A_Space
+        if (Path == A_Space) {
+            return
+        }
+
+        Pidl := ShellParseDisplayName(Path)
+        if (!Pidl) {
+            return
+        }
+
+        Path := ShellGetPidlPath(Pidl)
+        DllCall("ole32\CoTaskMemFree", "Ptr", Pidl)
+
+        FileDialogNavigate(Path, Hwnd)
     }
-
-    Pidl := ShellParseDisplayName(Path)
-    if (!Pidl) {
-        return
-    }
-
-    Path := ShellGetPidlPath(Pidl)
-    DllCall("ole32\CoTaskMemFree", "Ptr", Pidl)
-
-    FileDialogNavigate(Path, WinExist("A"))
-
-    return
 
 $+F1::
 $+F2::
@@ -1055,306 +1085,907 @@ $+F9::
 $+F10::
 $+F11::
 $+F12::
-    Path := FileDialogActiveGetFolderPath(WinExist("A"))
-    IniWrite % Path, % SettingsPath, % "FileDialogPaths", % SubStr(A_ThisHotkey, 3)
-    return
-
-#If
-
-global CurrentMenu
-global CurrentContext
-
-PopulateAppExeCurrentMenuContext()
-{
-    if (!WinActive("ahk_group AppExe")) {
-        CurrentMenu :=
-        CurrentContext := 0
-        return
+    HandleDialogShiftFButton() {
+        Path := FileDialogActiveGetFolderPath(Hwnd)
+        IniWrite % Path, % SettingsPath, % "FileDialogPaths", % SubStr(A_ThisHotkey, 3)
     }
 
-    CurrentMenu := GetCurrentMenu()
-    if (!CurrentMenu) {
-        CurrentContext := 0
-        return
-    }
-
-    CurrentContext := FindContextFromMenu(CurrentMenu)
-}
-
-IsMenuContextTrack()
-{
-    PopulateAppExeCurrentMenuContext()
-    return !!(CurrentContext & ContextTrack)
-}
-
-#If IsMenuContextTrack()
-
-$^a::CloseCurrentMenuAndSend(MacroKeys["Select All Tracks"])
-
-$c::
-    CloseCurrentMenuAndSend(MacroKeys["Colorize Selected Tracks"])
-    WaitFocusColorizeWindow()
-    return
-
-$d::CloseCurrentMenuAndSend(MacroKeys["Project - Remove Selected Tracks"])
-$Delete::CloseCurrentMenuAndSend(MacroKeys["Project - Remove Selected Tracks"])
-$Backspace::CloseCurrentMenuAndSend(MacroKeys["Project - Remove Selected Tracks"])
-$^d::CloseCurrentMenuAndSend(MacroKeys["Project - Duplicate Tracks"])
-$e::CloseCurrentMenuAndSend(MacroKeys["Audio - Disable/Enable Track"])
-$g::CloseCurrentMenuAndSend(MacroKeys["Mixer - Add Track To Selected: Group Channel"])
-$h::CloseCurrentMenuAndSend(MacroKeys["Mixer - HideSelected"])
-$^o::TrySelectCurrentMenuItem(CurrentMenu, "Load Track Preset...")
-$s::CloseCurrentMenuAndSend(MacroKeys["FX Channel to Selected Channels..."])
-$^s::TrySelectCurrentMenuItem(CurrentMenu, "Save Track Preset...")
-$^+s::CloseCurrentMenuAndSend(MacroKeys["File - Export Selected Tracks"])
-$v::CloseCurrentMenuAndSend(MacroKeys["Mixer - Add Track To Selected: VCA Fader"])
-$w::CloseCurrentMenuAndSend(MacroKeys["Edit - Edit VST Instrument"])
-
-#If
-
-IsMenuContextTrackListTrack()
-{
-    PopulateAppExeCurrentMenuContext()
-    return !!(CurrentContext & ContextTrackListTrack)
-}
-
-#If IsMenuContextTrackListTrack()
-
-$a::CloseCurrentMenuAndSend(MacroKeys["Edit - Select All on Tracks"])
-$f::CloseCurrentMenuAndSend(MacroKeys["Project - Folding: Tracks To Folder"])
-$i::CloseCurrentMenuAndSend(MacroKeys["Editors - Edit In-Place"])
-$r::CloseCurrentMenuAndSend(MacroKeys["Clear Selected Tracks"])
-
-#If
-
-IsMenuContextTrackListFolderTrack()
-{
-    PopulateAppExeCurrentMenuContext()
-    return !!(CurrentContext & ContextTrackListTrack) && !!(CurrentContext & ContextFolderTrack)
-}
-
-#If IsMenuContextTrackListFolderTrack()
-
-$Space::CloseCurrentMenuAndSend(MacroKeys["Project - Folding: Toggle Selected Track"])
-$+Space::CloseCurrentMenuAndSend(MacroKeys["Project - Folding: Fold Tracks"])
-$^Space::CloseCurrentMenuAndSend(MacroKeys["Project - Folding: Unfold Tracks"])
-
-#If
-
-IsMenuContextTrackListNonFolderTrack()
-{
-    PopulateAppExeCurrentMenuContext()
-    return !!(CurrentContext & ContextTrackListTrack) && !(CurrentContext & ContextFolderTrack)
-}
-
-#If IsMenuContextTrackListNonFolderTrack()
-
-$Space::TrySelectCurrentMenuItem(CurrentMenu, "Hide Automation") || TrySelectCurrentMenuItem(CurrentMenu, "Show Used Automation (Selected Tracks)")
-$+Space::TrySelectCurrentMenuItem(CurrentMenu, "Hide All Automation")
-$^Space::TrySelectCurrentMenuItem(CurrentMenu, "Show All Used Automation")
-
-#If
-
-IsMenuContextInsertSlot()
-{
-    PopulateAppExeCurrentMenuContext()
-    return !!(CurrentContext & ContextInsertSlot)
-}
-
-#If IsMenuContextInsertSlot()
-
-$d::CloseCurrentMenuAndSend(MacroKeys["Edit - Delete"])
-$Delete::CloseCurrentMenuAndSend(MacroKeys["Edit - Delete"])
-$Backspace::CloseCurrentMenuAndSend(MacroKeys["Edit - Delete"])
-$f::TrySelectCurrentMenuItem(CurrentMenu, "Set as last Pre-Fader Slot")
-$Tab::CloseCurrentMenuAndSend("!{Enter}")
-
-#If
-
-IsMenuContextNonEmptyInsertSlot()
-{
-    PopulateAppExeCurrentMenuContext()
-    return !!(CurrentContext & ContextNonEmptyInsertSlot)
-}
-
-#If IsMenuContextNonEmptyInsertSlot()
-
-$e::CloseCurrentMenuAndSend(MacroKeys["Edit - Activate/Deactivate"])
-$+e::CloseCurrentMenuAndSend("^!{Enter}")
-$s::TrySelectCurrentMenuItem(CurrentMenu, "Activate/Deactivate Side-Chaining")
-$q::TrySelectCurrentMenuItem(CurrentMenu, "Switch to A Setting") || TrySelectCurrentMenuItem(CurrentMenu, "Switch to B Setting")
-$+q::TrySelectCurrentMenuItem(CurrentMenu, "Apply Current Settings to A and B")
+#If IsActiveAppMenu()
 
 $Space::
-    WinGet Active, ID, A
-    CloseCurrentMenuAndSend("{Space up}{Alt down}{Click}{Alt up}")
-    if (!WaitWindowNotActive("ahk_id " Active, 10, 150)) {
-        Send % "{Enter}"
+    HandleAppMenuSpace() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if ((Context & ContextTrackListTrack) && !(Context & ContextFolderTrack)) {
+            TrySelectCurrentMenuItem(Menu, "Hide Automation") || TrySelectCurrentMenuItem(Menu, "Show Used Automation (Selected Tracks)") || CloseCurrentMenu()
+            return
+        }
+
+        if ((Context & ContextTrackListTrack) && (Context & ContextFolderTrack)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Project - Folding: Toggle Selected Track"]
+            return
+        }
+
+        if (Context & ContextNonEmptyInsertSlot) {
+            CloseCurrentMenu()
+            SendEvent % "{Space up}{Alt down}{Click}{Alt up}"
+            if (WaitWindowNotActive("ahk_id " Hwnd, 5, 150)) {
+                return
+            }
+            SendEvent % "{Enter}"
+            return
+        }
+
+        if (Context & ContextInsertsRack) {
+            CloseCurrentMenu()
+            SendEvent % "{Up}{Right}+!{Enter}"
+            return
+        }
+
+        if ((Context & ContextEditor) && (Context & ContextSelected)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Transport - Locate Selection"]
+            return
+        }
+
+        SendEvent % "{Blind}{Space}"
     }
-    return
+
+$^Space::
+    HandleAppMenuCtrlSpace() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if ((Context & ContextTrackListTrack) && !(Context & ContextFolderTrack)) {
+            TrySelectCurrentMenuItem(Menu, "Show All Used Automation") || CloseCurrentMenu()
+            return
+        }
+
+        if ((Context & ContextTrackListTrack) && (Context & ContextFolderTrack)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Project - Folding: Unfold Tracks"]
+            return
+        }
+
+        if ((Context & ContextEditor) && (Context & ContextSelected)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Edit - Move to Cursor"]
+            return
+        }
+
+        SendEvent % "{Blind}{Space}"
+    }
 
 $+Space::
-    WinGet Active, ID, A
-    CloseCurrentMenuAndSend("{Space up}{Alt down}{Click}{Alt up}")
-    if (WaitWindowNotActive("ahk_id " Active, 10, 150)) {
-        Send % MacroKeys["File - Close"]
+    HandleAppMenuShiftSpace() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if ((Context & ContextTrackListTrack) && !(Context & ContextFolderTrack)) {
+            TrySelectCurrentMenuItem(Menu, "Hide All Automation") || CloseCurrentMenu()
+            return
+        }
+
+        if ((Context & ContextTrackListTrack) && (Context & ContextFolderTrack)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Project - Folding: Fold Tracks"]
+            return
+        }
+
+        if (Context & ContextNonEmptyInsertSlot) {
+            CloseCurrentMenu()
+            SendEvent % "{Space up}{Alt down}{Click}{Alt up}"
+            if (!WaitWindowNotActive("ahk_id " Hwnd, 5, 150)) {
+                return
+            }
+            SendEvent % MacroKeys["File - Close"]
+            return
+        }
+
+        if (Context & ContextInsertsRack) {
+            CloseCurrentMenu()
+            SendEvent % "{Up}{Right}+{Enter}"
+            return
+        }
+
+        if ((Context & ContextEditor) && (Context & ContextSelected)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Transport - Locators to Selection"]
+            return
+        }
+
+        SendEvent % "{Blind}{Space}"
     }
-    return
 
-#If
+$Delete::
+    HandleAppMenuDelete() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
 
-IsMenuContextSendSlot()
-{
-    PopulateAppExeCurrentMenuContext()
-    return !!(CurrentContext & ContextSendSlot)
-}
+        Context := FindAppMenuContext(Menu)
 
-#If IsMenuContextSendSlot()
+        if (Context & ContextTrack) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Project - Remove Selected Tracks"]
+            return
+        }
 
-$^c::TrySelectCurrentMenuItem(CurrentMenu, "Copy Send")
-$d::TrySelectCurrentMenuItem(CurrentMenu, "Clear Send")
-$Delete::TrySelectCurrentMenuItem(CurrentMenu, "Clear Send")
-$Backspace::TrySelectCurrentMenuItem(CurrentMenu, "Clear Send")
-$e::CloseCurrentMenuAndSend(MacroKeys["Edit - Activate/Deactivate"])
-$f::TrySelectCurrentMenuItem(CurrentMenu, "Move to Pre-Fader") || TrySelectCurrentMenuItem(CurrentMenu, "Move to Post-Fader")
+        if (Context & ContextInsertSlot) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Edit - Delete"]
+            return
+        }
 
-$q::
-    CloseCurrentMenuAndSend("{Enter}")
-    if (!(Focus := WaitFocusedControl("^Edit1$", "A", 5, 1000))) {
-        return
+        if (Context & ContextSendSlot) {
+            TrySelectCurrentMenuItem(Menu, "Clear Send") || CloseCurrentMenu()
+            return
+        }
+
+        if ((Context & ContextEditor) && (Context & ContextSelected)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Edit - Delete"]
+            return
+        }
+
+        SendEvent % "{Blind}{Delete}"
     }
-    ControlSetText % Focus, % "-oo", A
-    ControlSend % Focus, % "{Enter}", A
-    return
 
-$r::TrySelectCurrentMenuItem(CurrentMenu, "Use Default Send Level")
-$^v::TrySelectCurrentMenuItem(CurrentMenu, "Paste Send")
-$Tab::CloseCurrentMenuAndSend("!{Enter}")
+$Backspace::
+    HandleAppMenuBackspace() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
 
-#If
+        Context := FindAppMenuContext(Menu)
 
-IsMenuContextInsertsRack()
-{
-    PopulateAppExeCurrentMenuContext()
-    return !!(CurrentContext & ContextInsertsRack)
-}
+        if (Context & ContextTrack) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Project - Remove Selected Tracks"]
+            return
+        }
 
-#If IsMenuContextInsertsRack()
+        if (Context & ContextInsertSlot) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Edit - Delete"]
+            return
+        }
 
-$e::TrySelectCurrentMenuItem(CurrentMenu, "Bypass")
-$^o::TrySelectCurrentMenuItem(CurrentMenu, "Load FX Chain Preset...")
-$^s::TrySelectCurrentMenuItem(CurrentMenu, "Save FX Chain Preset...")
-$Space::CloseCurrentMenuAndSend("{Up}{Right}+!{Enter}")
-$+Space::CloseCurrentMenuAndSend("{Up}{Right}+{Enter}")
+        if (Context & ContextSendSlot) {
+            TrySelectCurrentMenuItem(Menu, "Clear Send") || CloseCurrentMenu()
+            return
+        }
 
-#If
+        if ((Context & ContextEditor) && (Context & ContextSelected)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Edit - Delete"]
+            return
+        }
 
-IsMenuContextSendsRack()
-{
-    PopulateAppExeCurrentMenuContext()
-    return !!(CurrentContext & ContextSendsRack)
-}
+        SendEvent % "{Blind}{Backspace}"
+    }
 
-#If IsMenuContextSendsRack()
+$Tab::
+    HandleAppMenuTab() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
 
-$e::TrySelectCurrentMenuItem(CurrentMenu, "Bypass")
+        Context := FindAppMenuContext(Menu)
 
-#If
+        if (Context & ContextInsertSlot) {
+            CloseCurrentMenu()
+            SendEvent % "!{Enter}"
+            return
+        }
 
-IsMenuContextKeyEditor()
-{
-    PopulateAppExeCurrentMenuContext()
-    return !!(CurrentContext & ContextEditor) && !!(CurrentContext & ContextKeyEditor)
-}
+        if (Context & ContextSendSlot) {
+            CloseCurrentMenu()
+            SendEvent % "!{Enter}"
+            return
+        }
 
-#If IsMenuContextKeyEditor()
+        SendEvent % "{Blind}{Tab}"
+    }
 
-$w::CloseCurrentMenuAndSend(MacroKeys["Note Expression - Open/Close Editor"])
+$a::
+    HandleAppMenuA() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
 
-#If
+        Context := FindAppMenuContext(Menu)
 
-IsMenuContextEditorNotSelected()
-{
-    PopulateAppExeCurrentMenuContext()
-    return !!(CurrentContext & ContextEditor) && !(CurrentContext & ContextSelected)
-}
+        if (Context & ContextTrackListTrack) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Edit - Select All on Tracks"]
+            return
+        }
 
-#If IsMenuContextEditorNotSelected()
+        SendEvent % "{Blind}{a}"
+    }
 
-$z::CloseCurrentMenuAndSend(MacroKeys["Zoom - Zoom Full"])
+$^a::
+    HandleAppMenuCtrlA() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
 
-#If
+        Context := FindAppMenuContext(Menu)
 
-IsMenuContextEditorSelected()
-{
-    PopulateAppExeCurrentMenuContext()
-    return !!(CurrentContext & ContextEditor) && !!(CurrentContext & ContextSelected)
-}
+        if (Context & ContextTrack) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Select All Tracks"]
+            return
+        }
 
-#If IsMenuContextEditorSelected()
+        SendEvent % "{Blind}{a}"
+    }
+
+$b::
+    HandleAppMenuB() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if ((Context & ContextEditor) && (Context & ContextSelectedAudio)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Audio - Bounce"]
+            return
+        }
+
+        SendEvent % "{Blind}{b}"
+    }
 
 $c::
-    CloseCurrentMenuAndSend(MacroKeys["Project - Set Track/Event Color"])
-    WaitFocusColorizeWindow()
-    return
+    HandleAppMenuC() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
 
-$e::CloseCurrentMenuAndSend(MacroKeys["Edit - Mute/Unmute Objects"])
-$d::CloseCurrentMenuAndSend(MacroKeys["Edit - Delete"])
-$Delete::CloseCurrentMenuAndSend(MacroKeys["Edit - Delete"])
-$Backspace::CloseCurrentMenuAndSend(MacroKeys["Edit - Delete"])
-$^d::CloseCurrentMenuAndSend(MacroKeys["Edit - Repeat"])
-$g::CloseCurrentMenuAndSend(MacroKeys["Edit - Glue"])
-$+g::CloseCurrentMenuAndSend(MacroKeys["Dissolve"])
-$r::CloseCurrentMenuAndSend(MacroKeys["Render in Place - Render"])
-$^r::CloseCurrentMenuAndSend(MacroKeys["Render in Place - Render Setup..."])
-$+s::CloseCurrentMenuAndSend(MacroKeys["Edit - To Real Copy"])
-$x::CloseCurrentMenuAndSend(MacroKeys["Edit - Split Range"])
-$+x::CloseCurrentMenuAndSend(MacroKeys["Edit - Crop Range"])
-$z::CloseCurrentMenuAndSend(MacroKeys["Zoom - Zoom to Selection Horizontally"])
-$Space::CloseCurrentMenuAndSend(MacroKeys["Transport - Locate Selection"])
-$^Space::CloseCurrentMenuAndSend(MacroKeys["Edit - Move to Cursor"])
-$+Space::CloseCurrentMenuAndSend(MacroKeys["Transport - Locators to Selection"])
+        Context := FindAppMenuContext(Menu)
 
-#If
+        if (Context & ContextTrack) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Colorize Selected Tracks"]
+            WaitFocusColorizeWindow()
+            return
+        }
 
-IsMenuContextEditorSelectedAudio()
-{
-    PopulateAppExeCurrentMenuContext()
-    return !!(CurrentContext & ContextEditor) && !!(CurrentContext & ContextSelectedAudio)
-}
+        if ((Context & ContextEditor) && (Context & ContextSelected)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Project - Set Track/Event Color"]
+            WaitFocusColorizeWindow()
+            return
+        }
 
-#If IsMenuContextEditorSelectedAudio()
+        SendEvent % "{Blind}{c}"
+    }
 
-$b::CloseCurrentMenuAndSend(MacroKeys["Audio - Bounce"])
-$p::CloseCurrentMenuAndSend(MacroKeys["Audio - Find Selected in Pool"])
+$^c::
+    HandleAppMenuCtrlC() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
 
-#If
+        Context := FindAppMenuContext(Menu)
 
-IsMenuContextEditorSelectedMidi()
-{
-    PopulateAppExeCurrentMenuContext()
-    return !!(CurrentContext & ContextEditor) && !!(CurrentContext & ContextSelectedMidi)
-}
+        if (Context & ContextSendSlot) {
+            TrySelectCurrentMenuItem(Menu, "Copy Send") || CloseCurrentMenu()
+            return
+        }
 
-#If IsMenuContextEditorSelectedMidi()
+        SendEvent % "{Blind}{c}"
+    }
 
-$f::TryOpenCurrentSubMenu(CurrentMenu, "Functions")
-$q::CloseCurrentMenuAndSend(MacroKeys["MIDI - Quantize"])
-$^q::CloseCurrentMenuAndSend(MacroKeys["MIDI - Quantize Ends"])
-$+q::CloseCurrentMenuAndSend(MacroKeys["MIDI - Undo Quantize"])
-$^+q::CloseCurrentMenuAndSend(MacroKeys["MIDI - Quantize Lengths"])
-$v::CloseCurrentMenuAndSend(MacroKeys["MIDI - Legato"])
+$d::
+    HandleAppMenuD() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
 
-#If
+        Context := FindAppMenuContext(Menu)
 
-IsMenuContextNotKeyEditorSelectedMidi()
-{
-    PopulateAppExeCurrentMenuContext()
-    return !!(CurrentContext & ContextEditor) && !(CurrentContext & ContextKeyEditor) && !!(CurrentContext & ContextSelectedMidi)
-}
+        if (Context & ContextTrack) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Project - Remove Selected Tracks"]
+            return
+        }
 
-#If IsMenuContextNotKeyEditorSelectedMidi()
+        if (Context & ContextInsertSlot) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Edit - Delete"]
+            return
+        }
 
-$^s::CloseCurrentMenuAndSend(MacroKeys["File - Export MIDI Loop"])
+        if (Context & ContextSendSlot) {
+            TrySelectCurrentMenuItem(Menu, "Clear Send") || CloseCurrentMenu()
+            return
+        }
 
-#If
+        if ((Context & ContextEditor) && (Context & ContextSelected)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Edit - Delete"]
+            return
+        }
+
+        SendEvent % "{Blind}{d}"
+    }
+
+$^d::
+    HandleAppMenuCtrlD() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if (Context & ContextTrack) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Project - Duplicate Tracks"]
+            return
+        }
+
+        if ((Context & ContextEditor) && (Context & ContextSelected)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Edit - Repeat"]
+            return
+        }
+
+        SendEvent % "{Blind}{d}"
+    }
+
+$e::
+    HandleAppMenuE() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if (Context & ContextTrack) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Audio - Disable/Enable Track"]
+            return
+        }
+
+        if (Context & ContextNonEmptyInsertSlot) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Edit - Activate/Deactivate"]
+            return
+        }
+
+        if (Context & ContextSendSlot) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Edit - Activate/Deactivate"]
+            return
+        }
+
+        if (Context & ContextInsertsRack) {
+            TrySelectCurrentMenuItem(Menu, "Bypass") || CloseCurrentMenu()
+            return
+        }
+
+        if (Context & ContextSendsRack) {
+            TrySelectCurrentMenuItem(Menu, "Bypass") || CloseCurrentMenu()
+            return
+        }
+
+        if ((Context & ContextEditor) && (Context & ContextSelected)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Edit - Mute/Unmute Objects"]
+            return
+        }
+
+        SendEvent % "{Blind}{e}"
+    }
+
+$+e::
+    HandleAppMenuShiftE() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if (Context & ContextNonEmptyInsertSlot) {
+            CloseCurrentMenu()
+            SendEvent % "^!{Enter}"
+            return
+        }
+
+        SendEvent % "{Blind}{e}"
+    }
+
+$f::
+    HandleAppMenuF() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if (Context & ContextTrackListTrack) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Project - Folding: Tracks To Folder"]
+            return
+        }
+
+        if (Context & ContextInsertSlot) {
+            TrySelectCurrentMenuItem(Menu, "Set as last Pre-Fader Slot") || CloseCurrentMenu()
+            return
+        }
+
+        if (Context & ContextSendSlot) {
+            TrySelectCurrentMenuItem(Menu, "Move to Pre-Fader") || TrySelectCurrentMenuItem(Menu, "Move to Post-Fader") || CloseCurrentMenu()
+            return
+        }
+
+        if ((Context & ContextEditor) && (Context & ContextSelectedMidi)) {
+            TryOpenCurrentSubMenu(Menu, "Functions")
+            return
+        }
+
+        SendEvent % "{Blind}{f}"
+    }
+
+$g::
+    HandleAppMenuG() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if (Context & ContextTrack) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Mixer - Add Track To Selected: Group Channel"]
+            return
+        }
+
+        if ((Context & ContextEditor) && (Context & ContextSelected)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Edit - Glue"]
+            return
+        }
+
+        SendEvent % "{Blind}{g}"
+    }
+
+$+g::
+    HandleAppMenuShiftG() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if ((Context & ContextEditor) && (Context & ContextSelected)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Dissolve"]
+            return
+        }
+
+        SendEvent % "{Blind}{g}"
+    }
+
+$h::
+    HandleAppMenuH() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if (Context & ContextTrack) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Mixer - HideSelected"]
+            return
+        }
+
+        SendEvent % "{Blind}{h}"
+    }
+
+$i::
+    HandleAppMenuI() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if (Context & ContextTrackListTrack) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Editors - Edit In-Place"]
+            return
+        }
+
+        SendEvent % "{Blind}{i}"
+    }
+
+$^o::
+    HandleAppMenuCtrlO() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if (Context & ContextTrack) {
+            TrySelectCurrentMenuItem(Menu, "Load Track Preset...") || CloseCurrentMenu()
+            return
+        }
+
+        if (Context & ContextInsertsRack) {
+            TrySelectCurrentMenuItem(Menu, "Load FX Chain Preset...") || CloseCurrentMenu()
+            return
+        }
+
+        SendEvent % "{Blind}{o}"
+    }
+
+$p::
+    HandleAppMenuP() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if ((Context & ContextEditor) && (Context & ContextSelectedAudio)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Audio - Find Selected in Pool"]
+            return
+        }
+
+        SendEvent % "{Blind}{p}"
+    }
+
+$q::
+    HandleAppMenuQ() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if (Context & ContextNonEmptyInsertSlot) {
+            TrySelectCurrentMenuItem(Menu, "Switch to A Setting") || TrySelectCurrentMenuItem(Menu, "Switch to B Setting") || CloseCurrentMenu()
+            return
+        }
+
+        if (Context & ContextSendSlot) {
+            CloseCurrentMenu()
+            SendEvent % "{Enter}"
+            if (!(Focus := WaitFocusedControl("^Edit1$", "ahk_id " Hwnd, 5, 1000))) {
+                return
+            }
+            ControlSetText % Focus, % "-oo", % "ahk_id " Hwnd
+            ControlSend % Focus, % "{Enter}", % "ahk_id " Hwnd
+            return
+        }
+
+        if ((Context & ContextEditor) && (Context & ContextSelectedMidi)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["MIDI - Quantize"]
+            return
+        }
+
+        SendEvent % "{Blind}{q}"
+    }
+
+$^q::
+    HandleAppMenuCtrlQ() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if ((Context & ContextEditor) && (Context & ContextSelectedMidi)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["MIDI - Quantize Ends"]
+            return
+        }
+
+        SendEvent % "{Blind}{q}"
+    }
+
+$+q::
+    HandleAppMenuShiftQ() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if (Context & ContextNonEmptyInsertSlot) {
+            TrySelectCurrentMenuItem(Menu, "Apply Current Settings to A and B") || CloseCurrentMenu()
+            return
+        }
+
+        if ((Context & ContextEditor) && (Context & ContextSelectedMidi)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["MIDI - Undo Quantize"]
+            return
+        }
+
+        SendEvent % "{Blind}{q}"
+    }
+
+$^+q::
+    HandleAppMenuCtrlShiftQ() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if ((Context & ContextEditor) && (Context & ContextSelectedMidi)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["MIDI - Quantize Lengths"]
+            return
+        }
+
+        SendEvent % "{Blind}{q}"
+    }
+
+$r::
+    HandleAppMenuR() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if (Context & ContextTrackListTrack) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Clear Selected Tracks"]
+            return
+        }
+
+        if (Context & ContextSendSlot) {
+            TrySelectCurrentMenuItem(Menu, "Use Default Send Level") || CloseCurrentMenu()
+            return
+        }
+
+        if ((Context & ContextEditor) && (Context & ContextSelected)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Render in Place - Render"]
+            return
+        }
+
+        SendEvent % "{Blind}{r}"
+    }
+
+$^r::
+    HandleAppMenuCtrlR() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if ((Context & ContextEditor) && (Context & ContextSelected)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Render in Place - Render Setup..."]
+            return
+        }
+
+        SendEvent % "{Blind}{r}"
+    }
+
+$s::
+    HandleAppMenuS() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if (Context & ContextTrack) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["FX Channel to Selected Channels..."]
+            return
+        }
+
+        if (Context & ContextNonEmptyInsertSlot) {
+            TrySelectCurrentMenuItem(Menu, "Activate/Deactivate Side-Chaining") || CloseCurrentMenu()
+            return
+        }
+
+        SendEvent % "{Blind}{s}"
+    }
+
+$^s::
+    HandleAppMenuCtrlS() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if (Context & ContextTrack) {
+            TrySelectCurrentMenuItem(Menu, "Save Track Preset...") || CloseCurrentMenu()
+            return
+        }
+
+        if (Context & ContextInsertsRack) {
+            TrySelectCurrentMenuItem(Menu, "Save FX Chain Preset...") || CloseCurrentMenu()
+            return
+        }
+
+        if ((Context & ContextEditor) && !(Context & ContextKeyEditor) && (Context & ContextSelectedMidi)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["File - Export MIDI Loop"]
+            return
+        }
+
+        SendEvent % "{Blind}{s}"
+    }
+
+$+s::
+    HandleAppMenuShiftS() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if ((Context & ContextEditor) && (Context & ContextSelected)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Edit - To Real Copy"]
+            return
+        }
+
+        SendEvent % "{Blind}{s}"
+    }
+
+$^+s::
+    HandleAppMenuCtrlShiftS() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if (Context & ContextTrack) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["File - Export Selected Tracks"]
+            return
+        }
+
+        SendEvent % "{Blind}{s}"
+    }
+
+$v::
+    HandleAppMenuV() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if (Context & ContextTrack) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Mixer - Add Track To Selected: VCA Fader"]
+            return
+        }
+
+        if ((Context & ContextEditor) && (Context & ContextSelectedMidi)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["MIDI - Legato"]
+            return
+        }
+
+        SendEvent % "{Blind}{v}"
+    }
+
+$^v::
+    HandleAppMenuCtrlV() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if (Context & ContextSendSlot) {
+            TrySelectCurrentMenuItem(Menu, "Paste Send") || CloseCurrentMenu()
+            return
+        }
+
+        SendEvent % "{Blind}{v}"
+    }
+
+$w::
+    HandleAppMenuW() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if (Context & ContextTrack) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Edit - Edit VST Instrument"]
+            return
+        }
+
+        if ((Context & ContextEditor) && (Context & ContextKeyEditor)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Note Expression - Open/Close Editor"]
+            return
+        }
+
+        SendEvent % "{Blind}{w}"
+    }
+
+$x::
+    HandleAppMenuX() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if ((Context & ContextEditor) && (Context & ContextSelected)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Edit - Split Range"]
+            return
+        }
+
+        SendEvent % "{Blind}{x}"
+    }
+
+$+x::
+    HandleAppMenuShiftX() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if ((Context & ContextEditor) && (Context & ContextSelected)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Edit - Crop Range"]
+            return
+        }
+
+        SendEvent % "{Blind}{x}"
+    }
+
+$z::
+    HandleAppMenuZ() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if ((Context & ContextEditor) && !(Context & ContextSelected)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Zoom - Zoom Full"]
+            return
+        }
+
+        if ((Context & ContextEditor) && (Context & ContextSelected)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Zoom - Zoom to Selection Horizontally"]
+            return
+        }
+
+        SendEvent % "{Blind}{z}"
+    }
