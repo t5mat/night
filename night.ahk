@@ -1220,8 +1220,11 @@ $f::TrySelectCurrentMenuItem(CurrentMenu, "Move to Pre-Fader") || TrySelectCurre
 
 $q::
     CloseCurrentMenuAndSend("{Enter}")
-    ControlSetText % "Edit1", % "-oo", A
-    ControlSend % "Edit1", % "{Enter}", A
+    if (!(Focus := WaitFocusedControl("^Edit1$", "A", 5, 1000))) {
+        return
+    }
+    ControlSetText % Focus, % "-oo", A
+    ControlSend % Focus, % "{Enter}", A
     return
 
 $r::TrySelectCurrentMenuItem(CurrentMenu, "Use Default Send Level")
