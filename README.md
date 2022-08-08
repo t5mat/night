@@ -264,9 +264,9 @@ These pair well with disabling `Preferences -> Editing -> Tools -> Show Toolbox 
 
 ### File Dialogs
 
-In file dialogs, you can quickly navigate to your favorite folders using `F1-F12`.
+In file dialogs, you can quickly navigate to your favorite folders using `F1-12`.
 
-To save the current folder as a favorite, use `Shift+F1-F12`.
+To save the current folder as a favorite, use `Shift+F1-12`.
 
 <details>
 <summary>Notes</summary>
