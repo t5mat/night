@@ -1111,22 +1111,6 @@ $Space::
             return
         }
 
-        if (Context & ContextNonEmptyInsertSlot) {
-            CloseCurrentMenu()
-            SendEvent % "{Space up}{Alt down}{Click}{Alt up}"
-            if (WaitWindowNotActive("ahk_id " Hwnd, 5, 150)) {
-                return
-            }
-            SendEvent % "{Enter}"
-            return
-        }
-
-        if (Context & ContextInsertsRack) {
-            CloseCurrentMenu()
-            SendEvent % "{Up}{Right}+!{Enter}"
-            return
-        }
-
         if ((Context & ContextEditor) && (Context & ContextSelected)) {
             CloseCurrentMenu()
             SendEvent % MacroKeys["Transport - Locate Selection"]
@@ -1180,22 +1164,6 @@ $+Space::
         if ((Context & ContextTrackListTrack) && (Context & ContextFolderTrack)) {
             CloseCurrentMenu()
             SendEvent % MacroKeys["Project - Folding: Fold Tracks"]
-            return
-        }
-
-        if (Context & ContextNonEmptyInsertSlot) {
-            CloseCurrentMenu()
-            SendEvent % "{Space up}{Alt down}{Click}{Alt up}"
-            if (!WaitWindowNotActive("ahk_id " Hwnd, 5, 150)) {
-                return
-            }
-            SendEvent % MacroKeys["File - Close"]
-            return
-        }
-
-        if (Context & ContextInsertsRack) {
-            CloseCurrentMenu()
-            SendEvent % "{Up}{Right}+{Enter}"
             return
         }
 
@@ -1284,15 +1252,58 @@ $Tab::
 
         Context := FindAppMenuContext(Menu)
 
-        if (Context & ContextInsertSlot) {
+        if (Context & ContextTrack) {
             CloseCurrentMenu()
-            SendEvent % "!{Enter}"
+            SendEvent % MacroKeys["Edit - Edit VST Instrument"]
             return
         }
 
-        if (Context & ContextSendSlot) {
+        if (Context & ContextNonEmptyInsertSlot) {
             CloseCurrentMenu()
-            SendEvent % "!{Enter}"
+            SendEvent % "{Tab up}{Alt down}{Click}{Alt up}"
+            if (WaitWindowNotActive("ahk_id " Hwnd, 5, 150)) {
+                return
+            }
+            SendEvent % "{Enter}"
+            return
+        }
+
+        if (Context & ContextInsertsRack) {
+            CloseCurrentMenu()
+            SendEvent % "{Up}{Right}+!{Enter}"
+            return
+        }
+
+        if ((Context & ContextEditor) && (Context & ContextKeyEditor)) {
+            CloseCurrentMenu()
+            SendEvent % MacroKeys["Note Expression - Open/Close Editor"]
+            return
+        }
+
+        SendEvent % "{Blind}{Tab}"
+    }
+
+$+Tab::
+    HandleAppMenuShiftTab() {
+        if (!HandleMenuHotkey("IsActiveAppMenu", A_ThisFunc)) {
+            return
+        }
+
+        Context := FindAppMenuContext(Menu)
+
+        if (Context & ContextNonEmptyInsertSlot) {
+            CloseCurrentMenu()
+            SendEvent % "{Tab up}{Alt down}{Click}{Alt up}"
+            if (!WaitWindowNotActive("ahk_id " Hwnd, 5, 150)) {
+                return
+            }
+            SendEvent % MacroKeys["File - Close"]
+            return
+        }
+
+        if (Context & ContextInsertsRack) {
+            CloseCurrentMenu()
+            SendEvent % "{Up}{Right}+{Enter}"
             return
         }
 
@@ -1918,15 +1929,15 @@ $w::
 
         Context := FindAppMenuContext(Menu)
 
-        if (Context & ContextTrack) {
+        if (Context & ContextInsertSlot) {
             CloseCurrentMenu()
-            SendEvent % MacroKeys["Edit - Edit VST Instrument"]
+            SendEvent % "!{Enter}"
             return
         }
 
-        if ((Context & ContextEditor) && (Context & ContextKeyEditor)) {
+        if (Context & ContextSendSlot) {
             CloseCurrentMenu()
-            SendEvent % MacroKeys["Note Expression - Open/Close Editor"]
+            SendEvent % "!{Enter}"
             return
         }
 

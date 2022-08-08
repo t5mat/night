@@ -168,7 +168,7 @@ With all that, using these is almost as fast as triggering regular key commands.
 
 Keep in mind that right-clicking a track in the MixConsole/lower zone MixConsole does not select it.
 
-- `w` = show/hide editor (VST/sampler)
+- `Tab` = show/hide editor (VST/sampler)
 - `d/Delete/Backspace` = delete selected tracks
 - `Ctrl+a` = select all tracks
 - `Ctrl+d` = duplicate selected tracks
@@ -196,10 +196,10 @@ Keep in mind that right-clicking a track in the MixConsole/lower zone MixConsole
 
 Some of these don't work in the Inspector.
 
-- `Space` = open/focus plugin window (will not close if was already open) *does not work if mouse is under the bypass/arrow buttons*
-- `Shift+Space` = close plugin window *does not work if mouse is under the bypass/arrow buttons*
+- `Tab` = open/focus plugin window (will not close if was already open) *does not work if mouse is under the bypass/arrow buttons*
+- `Shift+Tab` = close plugin window *does not work if mouse is under the bypass/arrow buttons*
 - `d/Delete/Backspace` = delete insert
-- `Tab` = replace insert
+- `w` = replace insert
 - `e` = toggle insert bypass
 - `Shift+e` = toggle insert activated
 - `f` = set as last pre-fader slot
@@ -212,7 +212,7 @@ Some of these don't work in the Inspector.
 Some of these don't work in the Inspector.
 
 - `d/Delete/Backspace` = clear send
-- `Tab` = replace send
+- `w` = replace send
 - `Ctrl+c` = copy send
 - `Ctrl+v` = paste send
 - `e` = toggle send activated
@@ -222,8 +222,8 @@ Some of these don't work in the Inspector.
 
 #### Inserts rack context menu
 
-- `Space` = open/focus all plugin windows
-- `Shift+Space` = close all plugin windows
+- `Tab` = open/focus all plugin windows
+- `Shift+Tab` = close all plugin windows
 - `e` = toggle inserts bypass
 - `Ctrl+o` = load FX chain preset
 - `Ctrl+s` = save as FX chain preset
@@ -260,7 +260,7 @@ These pair well with disabling `Preferences -> Editing -> Tools -> Show Toolbox 
 - *(MIDI events/parts)* `Shift+q` = reset quantize
 - *(MIDI events/parts)* `v` = legato
 - *(MIDI parts)* `Ctrl+s` = export first selected part as MIDI loop (includes track settings)
-- *(key editor)* `w` = open/close note expression editor
+- *(key editor)* `Tab` = open/close note expression editor
 
 ### File Dialogs
 
