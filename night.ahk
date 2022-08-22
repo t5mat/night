@@ -865,16 +865,16 @@ AutoExec() {
     Menu, Tray, Standard
 }
 
-IsMenuTime() {
+IsContextMenuTime() {
     return (MenuTime && A_TickCount - MenuTime <= MaxMenuTime)
 }
 
-IsMenu() {
-    return ((Menu := GetCurrentMenu()) || IsMenuTime())
+IsContextMenu(Directive) {
+    return ((Menu := GetCurrentMenu()) || (Directive && IsContextMenuTime()))
 }
 
 HandleMenuHotkeyTimerTick(TestFunc, HandleFunc, MenuTime) {
-    if (%TestFunc%()) {
+    if (%TestFunc%(false)) {
         SetTimer % HandleMenuHotkeyTimer, Off
         HandleMenuHotkeyTimer :=
         %HandleFunc%()
@@ -919,11 +919,17 @@ IsActiveDialog() {
     return (WinExist("ahk_id " Hwnd " " AppTitle) || WinExist("ahk_id " Hwnd " " SelfTitle)) && WinExist("ahk_id " Hwnd " " DialogTitle)
 }
 
-IsActiveAppMenu() {
-    return WinExist("ahk_id " (Hwnd := WinExist("A")) " " AppTitle) && IsMenu()
+IsActiveAppMenu(Directive := true) {
+    return WinExist("ahk_id " (Hwnd := WinExist("A")) " " AppTitle) && IsContextMenu(Directive)
 }
 
 #If IsActiveAppWindow()
+
+~*RButton::
+    MenuTime := A_TickCount
+
+~*AppsKey::
+    MenuTime := A_TickCount
 
 $XButton1::
     if (!(Hwnd := WinExist(AppProjectWindowTitle))) {
