@@ -409,14 +409,14 @@ FindAppMenuContext(Menu) {
 ;@Ahk2Exe-Bin Unicode 64-bit.bin
 
 ;@Ahk2Exe-SetDescription night
-;@Ahk2Exe-SetFileVersion 1.1.0
+;@Ahk2Exe-SetFileVersion 1.1.1
 ;@Ahk2Exe-SetInternalName night
 ;@Ahk2Exe-SetCopyright https://github.com/t5mat/night
 ;@Ahk2Exe-SetOrigFilename night.exe
 ;@Ahk2Exe-SetProductName night
-;@Ahk2Exe-SetProductVersion 1.1.0
+;@Ahk2Exe-SetProductVersion 1.1.1
 
-global Version := "1.1.0"
+global Version := "1.1.1"
 global Url := "https://github.com/t5mat/night"
 
 global MacroPrefix := "~ night - "
