@@ -46,6 +46,17 @@ WaitWindowExist(WinTitle, SleepAmount, Timeout) {
     }
 }
 
+WaitWindowActive(WinTitle, SleepAmount, Timeout) {
+    Start := A_TickCount
+    while (!WinActive(WinTitle)) {
+        Sleep % SleepAmount
+        if (A_TickCount - Start > Timeout) {
+            return false
+        }
+    }
+    return true
+}
+
 WaitWindowNotActive(WinTitle, SleepAmount, Timeout) {
     Start := A_TickCount
     while (WinActive(WinTitle)) {
@@ -596,6 +607,9 @@ WaitFocusColorizeWindow() {
     }
 
     WinActivate % "ahk_id " Hwnd
+    if (!WaitWindowActive("ahk_id " Hwnd, 5, 1000)) {
+        return
+    }
 
     WinGetPos, , , Width, Height, % "ahk_id " Hwnd
     if (!Width) {
@@ -915,7 +929,12 @@ $XButton1::
     if (!(Hwnd := WinExist(AppProjectWindowTitle))) {
         return
     }
+
     WinActivate % "ahk_id " Hwnd
+    if (!WaitWindowActive("ahk_id " Hwnd, 5, 1000)) {
+        return
+    }
+
     SendEvent % MacroKeys["Show Lower Zone MixConsole Page " MixConsolePage] MacroKeys["Edit - Open/Close Editor"]
     return
 
@@ -923,7 +942,12 @@ $XButton2::
     if (!(Hwnd := WinExist(AppProjectWindowTitle))) {
         return
     }
+
     WinActivate % "ahk_id " Hwnd
+    if (!WaitWindowActive("ahk_id " Hwnd, 5, 1000)) {
+        return
+    }
+
     SendEvent % MacroKeys["Show Lower Zone MixConsole Page " MixConsolePage]
     return
 
