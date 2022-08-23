@@ -42,14 +42,14 @@ WaitWindowExist(WinTitle, SleepAmount, Timeout) {
             return
         }
 
-        Sleep % SleepAmount
+        DllCall("Sleep", "UInt", SleepAmount)
     }
 }
 
 WaitWindowActive(WinTitle, SleepAmount, Timeout) {
     Start := A_TickCount
     while (!WinActive(WinTitle)) {
-        Sleep % SleepAmount
+        DllCall("Sleep", "UInt", SleepAmount)
         if (A_TickCount - Start > Timeout) {
             return false
         }
@@ -60,7 +60,7 @@ WaitWindowActive(WinTitle, SleepAmount, Timeout) {
 WaitWindowNotActive(WinTitle, SleepAmount, Timeout) {
     Start := A_TickCount
     while (WinActive(WinTitle)) {
-        Sleep % SleepAmount
+        DllCall("Sleep", "UInt", SleepAmount)
         if (A_TickCount - Start > Timeout) {
             return false
         }
@@ -84,7 +84,7 @@ WaitFocusedControl(ControlPattern, WinTitle, SleepAmount, Timeout) {
             return
         }
 
-        Sleep % SleepAmount
+        DllCall("Sleep", "UInt", SleepAmount)
     }
 }
 
