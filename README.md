@@ -10,9 +10,9 @@ It overrides almost none of the assignable keyboard shortcut in Cubase/Nuendo; t
 
 I made this to address some of the workflow limitations I've encountered as I was learning Cubase. I've actually come to rely on night much more than I expected, so I decided to take a bit of time to package and share it.
 
-Don't expect this to be very maintained; rather, it is encouraged you modify night yourself if you want something changed. The code is relatively easy to follow, and with a bit of AutoHotkey knowledge, you can tweak it to fit your preferences or add new functionality.
+**night was built for and tested on Cubase/Nuendo 12**, but most features should work in earlier versions too. If you're feeling adventurous, know that the PLE user presets folder has changed, and some features might not work due to context menu changes/certain key commands or PLE features not being available.
 
-**night was built for and tested on Cubase/Nuendo 12.** However, a lot of this should work in earlier versions too. If you're feeling adventurous, know that the PLE user presets folder has changed, and some features might not work due to context menu changes/certain key commands or PLE features not being available.
+With basic AutoHotkey knowledge, you can tweak existing hotkeys or add new ones relatively easily - see the [Development](#development) section for more info.
 
 </details>
 
@@ -65,7 +65,9 @@ After configuration, night will automatically install itself into Cubase/Nuendo 
 
 - `Escape` is modified to close every window in Cubase (by default, it does not - MixConsole, Pool, Colorize...)
 - `Escape` also quits Cubase if pressed when focused on the weird title bar thing
-- The Colorize window will be focused and moved to the mouse cursor when activated using one of night's hotkeys. It does not get focused by default, so even with enabling `Escape` for it, you cannot open it and close it without focusing it first.
+- Fix the weird title bar thing getting focus instead of the Project window after some windows are closed (MixConsole...)
+- The Colorize window is focused and moved to the mouse cursor when opened (by default, you can't `Escape` immediately after opening it without focusing it by mouse clicking first)
+- The Colorize window is hidden when it loses focus
 
 ### Scroll Zooming
 
@@ -134,6 +136,9 @@ These hotkeys provide a more ergonomic way to work with the lower zone.
 - `Mouse4` = show lower zone editor (or editor window)
 - `Mouse5` = show lower zone MixConsole
   - `Mouse5+Scroll` = move between pages (faders/inserts/sends)
+  - `Mouse5+1` = show faders page
+  - `Mouse5+2` = show inserts page
+  - `Mouse5+3` = show sends page
 
 <details>
 <summary>Notes</summary>
@@ -143,7 +148,7 @@ I mostly use the lower zone MixConsole - you can do multi-channel insert/send ma
 However, by default, there are a few limitations to working with the lower zone MixConsole:
 
 - There is no key command to show it, only toggle
-- Moving between pages (faders/inserts/sends) requires either moving the mouse to the small page icons or a key command (default Page Up/Down)
+- Moving between pages (faders/inserts/sends) is not very ergonomic - it requires either moving the mouse to the small page icons or pressing `PageUp`/`PageDown`
 
 </details>
 
@@ -281,20 +286,20 @@ Also, track archives, for example, are useful sometimes compared to track preset
 
 This tool replaces your project's colors to colors provided by a file.
 
-You can use it with one of the included 32-color files generated from [matplotlib colormaps](https://matplotlib.org/stable/tutorials/colors/colormaps.html), or create/generate your own colors files and apply them to your projects without having to manually setup each one in `Project -> Project Colors Setup`.
+You can use it with one of the included 32-color files (generated from [matplotlib colormaps](https://matplotlib.org/stable/tutorials/colors/colormaps.html)), or create/generate your own colors files and apply them to your projects without having to manually setup each one in `Project -> Project Colors Setup`.
 
 <details>
 <summary>Usage</summary>
 
-Open your project.
+1. Open your project.
 
-Go to `Project -> Project Colors Setup -> Presets` and use `Number of Basic Colors` and `Number of Color Tints` to set the amount of colors you want for your project (click Apply). **Patching works only for projects with colors named "Color 1", "Color 2"...**, so if any of your colors have been renamed, clicking Apply in the Presets tab will also reset their names to default.
+2. Go to `Project -> Project Colors Setup -> Presets` and use `Number of Basic Colors` and `Number of Color Tints` to set the amount of colors you want for your project (click Apply). **Patching works only for projects with colors named "Color 1", "Color 2"...**, so if any of your colors have been renamed, clicking Apply in the Presets tab will also reset their names to default.
 
-Save, close, **AND BACKUP** your project file.
+3. Save, close, **AND BACKUP** your project file.
 
-Launch the Project Colors Patcher from the tray menu. Choose your project file and then a colors file. The tool will replace the colors in your project with colors from the colors file (patching a 32-color project with a 64-color file will only use up to 32 colors from the colors file, etc).
+4. Launch the Project Colors Patcher from the tray menu. Choose your project file and then a colors file. The tool will replace the colors in your project with colors from the colors file (patching a 32-color project with a 64-color file will only use up to 32 colors from the colors file, etc).
 
-When you open your project again, you should now see the new colors.
+5. Open your project again to see the new colors.
 
 </details>
 
@@ -313,3 +318,5 @@ All the macros and PLE presets installed/used by night are defined in `night.xml
 `night.xml` is bundled into `.exe` builds.
 
 For each macro in `night.xml` that is assigned to `auto`, night will generate a random unicode character and assign it to that macro in Cubase. These assignments are then accessible to night itself as a way to trigger macros inside Cubase.
+
+To add/modify hotkeys, focus on the last sections of code in `night.ahk` (code is structured from most library code to most app-specific code).
