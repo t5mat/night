@@ -815,6 +815,182 @@ TrayMenuProjectColorsPatcher() {
 TrayMenuStub() {
 }
 
+ShowActiveAppMenuInfo() {
+    Gui ActiveAppMenuInfo:Destroy
+
+    if (!ActiveAppMenu) {
+        return
+    }
+
+    Rows := []
+    if ((ActiveAppMenuContext & AppMenuContextTrackList) || (ActiveAppMenuContext & AppMenuContextMixConsoleTracks)) {
+        Rows.Push(["Ctrl+a", "select all tracks"])
+
+        if (ActiveAppMenuContext & AppMenuContextTrack) {
+            Rows.Push(["", ""])
+            Rows.Push(["Tab", "show/hide editor"])
+            Rows.Push(["d/Delete/Backspace", "delete"])
+            Rows.Push(["Ctrl+d", "duplicate"])
+            Rows.Push(["e", "toggle enabled"])
+            Rows.Push(["h", "hide"])
+            Rows.Push(["c", "colorize"])
+            Rows.Push(["s", "send to a new FX channel"])
+            Rows.Push(["g", "send to a new group channel"])
+            Rows.Push(["v", "send to a new VCA fader"])
+            Rows.Push(["Ctrl+o", "load track preset"])
+            Rows.Push(["Ctrl+s", "save as track preset"])
+            Rows.Push(["Ctrl+Shift+s", "save as track archive"])
+
+            if (ActiveAppMenuContext & AppMenuContextTrackList) {
+                Rows.Push(["", ""])
+                Rows.Push(["i", "toggle edit in-place"])
+                Rows.Push(["f", "move to a new folder"])
+                Rows.Push(["a", "select all data"])
+                Rows.Push(["r", "clear all data"])
+
+                if (ActiveAppMenuContext & AppMenuContextFolderTrack) {
+                    Rows.Push(["", ""])
+                    Rows.Push(["Space", "collapse/expand first selected folder track"])
+                    Rows.Push(["Ctrl+Space", "expand all folder tracks"])
+                    Rows.Push(["Shift+Space", "collapse all folder tracks"])
+                } else {
+                    Rows.Push(["", ""])
+                    Rows.Push(["Space", "show used automation/hide automation"])
+                    Rows.Push(["Ctrl+Space", "show all used automation"])
+                    Rows.Push(["Shift+Space", "hide all automation"])
+                }
+            }
+        }
+    } else if (ActiveAppMenuContext & AppMenuContextInsertSlot) {
+        Rows.Push(["Tab", "open/focus plugin window"])
+        Rows.Push(["", "(doesn't work if mouse is under the bypass/arrow buttons)"])
+        Rows.Push(["Shift+Tab", "close plugin window"])
+        Rows.Push(["", "(doesn't work if mouse is under the bypass/arrow buttons)"])
+        Rows.Push(["d/Delete/Backspace", "delete"])
+        Rows.Push(["w", "replace"])
+        Rows.Push(["e", "toggle bypass"])
+        Rows.Push(["Shift+e", "toggle activated"])
+        Rows.Push(["f", "set as last pre-fader slot"])
+        Rows.Push(["s", "toggle sidechaining activated"])
+        Rows.Push(["q", "switch between A/B settings"])
+        Rows.Push(["Shift+q", "apply current settings to A and B"])
+    } else if (ActiveAppMenuContext & AppMenuContextSendSlot) {
+        Rows.Push(["d/Delete/Backspace", "clear"])
+        Rows.Push(["w", "replace"])
+        Rows.Push(["Ctrl+c", "copy"])
+        Rows.Push(["Ctrl+v", "paste"])
+        Rows.Push(["e", "toggle activated"])
+        Rows.Push(["f", "move to pre/post fader"])
+        Rows.Push(["r", "use default level"])
+        Rows.Push(["q", "set level to -oo"])
+    } else if (ActiveAppMenuContext & AppMenuContextRack) {
+        if (ActiveAppMenuContext & AppMenuContextInsertsRack) {
+            Rows.Push(["Tab", "open/focus all plugin windows"])
+            Rows.Push(["Shift+Tab", "close all plugin windows"])
+            Rows.Push(["e", "toggle bypass all"])
+            Rows.Push(["Ctrl+o", "load FX chain preset"])
+            Rows.Push(["Ctrl+s", "save as FX chain preset"])
+        } else {
+            Rows.Push(["e", "toggle bypass all"])
+        }
+    } else if (ActiveAppMenuContext & AppMenuContextEditor) {
+        if (!(ActiveAppMenuContext & AppMenuContextSelected)) {
+            Rows.Push(["z", "zoom to view horizontally"])
+        } else {
+            Rows.Push(["z", "zoom to selection horizontally"])
+            Rows.Push(["d/Delete/Backspace", "delete"])
+            Rows.Push(["c", "colorize"])
+            Rows.Push(["e", "toggle muted"])
+            Rows.Push(["Ctrl+d", "repeat"])
+            Rows.Push(["g", "glue"])
+            Rows.Push(["Shift+g", "dissolve"])
+            Rows.Push(["Shift+s", "convert shared to real copies"])
+            Rows.Push(["r", "render in place"])
+            Rows.Push(["Ctrl+r", "render in place (settings)"])
+
+            Rows.Push(["", ""])
+            Rows.Push(["Space", "locate selection start"])
+            Rows.Push(["Shift+Space", "move left/right locators to selection"])
+            Rows.Push(["Ctrl+Space", "move selection to cursor"])
+
+            Rows.Push(["", ""])
+            Rows.Push(["", "(range tool)"])
+            Rows.Push(["x", "split range"])
+            Rows.Push(["Shift+x", "crop range"])
+
+            if (ActiveAppMenuContext & AppMenuContextSelectedAudio) {
+                Rows.Push(["", ""])
+                Rows.Push(["", "(audio)"])
+                Rows.Push(["b", "bounce"])
+                Rows.Push(["p", "show in pool"])
+            } else if (ActiveAppMenuContext & AppMenuContextSelectedMidi) {
+                Rows.Push(["", ""])
+                Rows.Push(["", "(MIDI)"])
+                Rows.Push(["f", "open functions menu"])
+                Rows.Push(["q", "quantize event starts"])
+                Rows.Push(["Ctrl+q", "quantize event ends"])
+                Rows.Push(["Ctrl+Shift+q", "quantize event lengths"])
+                Rows.Push(["Shift+q", "reset quantize"])
+                Rows.Push(["v", "legato"])
+                Rows.Push(["Ctrl+s", "export first selected part as MIDI loop"])
+            }
+        }
+
+        if (ActiveAppMenuContext & AppMenuContextKeyEditor) {
+            Rows.Push(["", ""])
+            Rows.Push(["Tab", "toggle note expression editor"])
+        }
+    } else {
+        return
+    }
+
+    Length := 0
+    for _, Row in Rows {
+        Length := Max(Length, StrLen(Row[1]))
+    }
+
+    Text := ""
+    for Index, Row in Rows {
+        Text := Text " " Format("{:" Length "}", Row[1]) "  " Row[2] " " (Index < Rows.Count() ? "`n" : "")
+    }
+
+    CoordMode Mouse, Screen
+    MouseGetPos X, Y
+    Monitor := GetMonitorFromPoint(X, Y)
+    GetMonitorWorkArea(Monitor, MonitorX, MonitorY, MonitorWidth, MonitorHeight)
+
+    MenuHwnd := WinExist(MenuTitle)
+	VarSetCapacity(MenuRect, 0x10)
+	DllCall("GetClientRect", "Ptr", MenuHwnd, "Ptr", &MenuRect)
+	DllCall("ClientToScreen", "Ptr", MenuHwnd, "Ptr", &MenuRect)
+	DllCall("ClientToScreen", "Ptr", MenuHwnd, "Ptr", &MenuRect + 0x8)
+
+    Gui ActiveAppMenuInfo:New, -Caption +Border +ToolWindow +E0x20 +AlwaysOnTop +HwndInfoHwnd
+    WinSet Transparent, 200, % "ahk_id " InfoHwnd
+
+    Gui ActiveAppMenuInfo:Font, s9 w900, % "Consolas"
+    Gui ActiveAppMenuInfo:Color, FFDB4C
+    Gui ActiveAppMenuInfo:Add, Text, , % Text
+
+    Gui ActiveAppMenuInfo:Show, Hide
+
+	WinGetPos, , , InfoWidth, InfoHeight, % "ahk_id " InfoHwnd
+
+    static Padding := 10
+
+	VarSetCapacity(InfoRightRect, 0x10)
+    NumPut(MonitorX + MonitorWidth - Padding - InfoWidth, &InfoRightRect + 0x0, "Int")
+    NumPut(MonitorY + MonitorHeight - Padding - InfoHeight, &InfoRightRect + 0x4, "Int")
+    NumPut(MonitorX + MonitorWidth - Padding, &InfoRightRect + 0x8, "Int")
+    NumPut(MonitorY + MonitorHeight - Padding, &InfoRightRect + 0xC, "Int")
+
+    VarSetCapacity(Dest, 0x10)
+    Left := DllCall("IntersectRect", "Ptr", &Dest, "Ptr", &MenuRect, "Ptr", &InfoRightRect, "Int")
+    WinMove % "ahk_id " InfoHwnd, , % (Left ? (MonitorX + Padding) : (MonitorX + MonitorWidth - Padding - InfoWidth)), % (MonitorY + MonitorHeight - Padding - InfoHeight)
+
+    Gui ActiveAppMenuInfo:Show, NoActivate
+}
+
 global ActiveHwnd
 global ActiveHwndContext
 global ActiveAppMenu
@@ -854,6 +1030,7 @@ SetEventHook() {
     if (ActiveAppMenu := (ActiveHwndContext & HwndContextAppChildWindow) ? GetActiveMenu() :) {
         ActiveAppMenuContext := FindAppMenuContext(ActiveAppMenu)
     }
+    ShowActiveAppMenuInfo()
     MenuTime := 0
 
     ColorizeHwnd :=
@@ -911,6 +1088,7 @@ HandleWindowDestroy(Time, Hwnd) {
         if (ActiveAppMenu := (ActiveHwndContext & HwndContextAppChildWindow) ? GetActiveMenu() :) {
             ActiveAppMenuContext := FindAppMenuContext(ActiveAppMenu)
         }
+        ShowActiveAppMenuInfo()
     }
 
     if (ColorizeHwnd == Hwnd) {
@@ -959,10 +1137,12 @@ HandleMenuPopupStart(Time) {
     if (ActiveAppMenu := (ActiveHwndContext & HwndContextAppChildWindow) ? GetActiveMenu() :) {
         ActiveAppMenuContext := FindAppMenuContext(ActiveAppMenu)
     }
+    ShowActiveAppMenuInfo()
 }
 
 HandleMenuPopupEnd(Time) {
     ActiveAppMenu :=
+    ShowActiveAppMenuInfo()
 }
 
 AutoExec() {

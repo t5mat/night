@@ -23,13 +23,7 @@ With basic AutoHotkey knowledge, you can tweak existing hotkeys or add new ones 
   - [Scroll Locating](#scroll-locating)
   - [Automation](#automation)
   - [Lower Zone](#lower-zone)
-  - [Context Menu Hotkeys](#context-menu-hotkeys)
-    - [Track context menu](#track-context-menu)
-    - [Insert slot context menu](#insert-slot-context-menu)
-    - [Send slot context menu](#send-slot-context-menu)
-    - [Inserts rack context menu](#inserts-rack-context-menu)
-    - [Sends rack context menu](#sends-rack-context-menu)
-    - [Editor context menu](#editor-context-menu)
+  - [Context Menus](#context-menus)
   - [File Dialogs](#file-dialogs)
   - [Project Colors Patcher](#project-colors-patcher)
 - [Development](#development)
@@ -127,7 +121,9 @@ This can be used to quickly show automation lanes for parameters (with "reveal o
 
 This hotkey can also be used to quickly record automation - move your cursor somewhere, hold `Space` and tweak your parameters as the transport is playing.
 
+<p>
 <sup>(it is assumed that you use `Space` for `Transport - StartStop`, which is the default)</sup>
+</p>
 
 ### Lower Zone
 
@@ -152,120 +148,32 @@ However, by default, there are a few limitations to working with the lower zone 
 
 </details>
 
-### Context Menu Hotkeys
+### Context Menus
 
-These hotkeys work when certain context menus (right-click) are open.
+New hotkeys are available when certain context menus are open (track, insert/send slot/rack, editor).
+
+Info about available hotkeys will be shown when relevant context menus are open.
+
+<p>
+<sup>
+(the editor hotkeys go well with disabling <code>Preferences -> Editing -> Tools -> Show Toolbox on Right-Click</code>)
+<br>
+(some hotkeys don't work when used in the Inspector)
+</sup>
+</p>
 
 <details>
 <summary>Notes</summary>
 
 Using key commands is much faster than for example moving the mouse to the arrow that toggles automation lanes, or selecting the a menu item. However, having too many key commands can lead to a complicated and hard-to-remember setup.
 
-These context-based keyboard shortcuts provide a nice benefit compared to global ones: you can use 1 hotkey for multiple actions based on what you right-clicked - track/midi note/audio part... You have the whole keyboard free so hotkeys can match their actions (e = enable, c = colorize, g = glue), which makes them easier to remember. Also, you can have most hotkeys on the left side of the keyboard which makes them more ergonomic to use.
+These context-based hotkeys provide a nice benefit compared to global ones: you can use 1 hotkey for multiple actions based on what you right-clicked - track/midi note/audio part... You have the whole keyboard free so hotkeys can match their actions (e = enable, c = colorize, g = glue), which makes them easier to remember. Also, you can have most hotkeys on the left side of the keyboard which makes them more ergonomic to use.
 
 They enable assigning keys to actions that are not available as key commands, and can also utilize information provided by the context menu items that cannot be accessed in macros/PLE (for example, whether automation lanes are shown for any of the selected tracks - this is required for implementing toggle).
 
 With all that, using these is almost as fast as triggering regular key commands.
 
 </details>
-
-#### Track context menu
-
-Keep in mind that right-clicking a track in the MixConsole/lower zone MixConsole does not select it.
-
-- `Tab` = show/hide editor (VST/sampler)
-- `d/Delete/Backspace` = delete selected tracks
-- `Ctrl+a` = select all tracks
-- `Ctrl+d` = duplicate selected tracks
-- `e` = toggle selected tracks enabled
-- `h` = hide selected tracks
-- `c` = colorize selected tracks
-- `i` = toggle selected tracks edit in-place
-- `f` = move selected tracks to a new folder
-- `s` = send selected channels to a new FX channel
-- `g` = send selected channels to a new group channel
-- `v` = send selected channels to a new VCA fader
-- `Ctrl+o` = load track preset
-- `Ctrl+s` = save as track preset
-- `Ctrl+Shift+s` = save as track archive
-- *(track list)* `a` = select all data on track
-- *(track list)* `r` = clear selected tracks (deletes all events/parts, automation, versions)
-- *(track list, folder tracks)* `Space` = collapse/expand first selected folder track
-- *(track list, folder tracks)* `Ctrl+Space` = expand all folder tracks
-- *(track list, folder tracks)* `Shift+Space` = collapse all folder tracks
-- *(track list, non folder tracks)* `Space` = show used automation/hide automation for all selected tracks
-- *(track list, non folder tracks)* `Ctrl+Space` = show all used automation
-- *(track list, non folder tracks)* `Shift+Space` = hide all automation
-
-#### Insert slot context menu
-
-Some of these don't work in the Inspector.
-
-- `Tab` = open/focus plugin window (will not close if was already open) *does not work if mouse is under the bypass/arrow buttons*
-- `Shift+Tab` = close plugin window *does not work if mouse is under the bypass/arrow buttons*
-- `d/Delete/Backspace` = delete insert
-- `w` = replace insert
-- `e` = toggle insert bypass
-- `Shift+e` = toggle insert activated
-- `f` = set as last pre-fader slot
-- `s` = toggle sidechaining activated
-- `q` = switch between A/B settings
-- `Shift+q` = apply current settings to A and B
-
-#### Send slot context menu
-
-Some of these don't work in the Inspector.
-
-- `d/Delete/Backspace` = clear send
-- `w` = replace send
-- `Ctrl+c` = copy send
-- `Ctrl+v` = paste send
-- `e` = toggle send activated
-- `f` = move send to pre/post fader
-- `r` = use default send level
-- `q` = set send level to -oo
-
-#### Inserts rack context menu
-
-- `Tab` = open/focus all plugin windows
-- `Shift+Tab` = close all plugin windows
-- `e` = toggle inserts bypass
-- `Ctrl+o` = load FX chain preset
-- `Ctrl+s` = save as FX chain preset
-
-#### Sends rack context menu
-
-- `e` = toggle sends bypass
-
-#### Editor context menu
-
-These pair well with disabling `Preferences -> Editing -> Tools -> Show Toolbox on Right-Click`.
-
-- *(editor background)* `z` = zoom to view horizontally
-- *(events/parts)* `z` = zoom to selection horizontally
-- *(events/parts)* `Space` = locate selection start
-- *(events/parts)* `Shift+Space` = move left/right locators to selection
-- *(events/parts)* `Ctrl+Space` = move selection to cursor
-- *(events/parts)* `d/Delete/Backspace` = delete selection
-- *(events/parts)* `c` = colorize selection
-- *(events/parts)* `e` = toggle selection muted
-- *(events/parts)* `Ctrl+d` = repeat selection
-- *(events/parts)* `g` = glue selection
-- *(events/parts)* `Shift+g` = dissolve selected audio/MIDI parts
-- *(events/parts)* `Shift+s` = convert shared to real copies
-- *(events/parts)* `r/Ctrl+r` = render in place/render in place (settings)
-- *(range tool)* `x` = split selection range
-- *(range tool)* `Shift+x` = crop selection range
-- *(audio events/parts)* `b` = bounce selection
-- *(audio events)* `p` = show selection in pool
-- *(MIDI events/parts)* `f` = open functions menu
-- *(MIDI events/parts)* `q` = quantize event starts
-- *(MIDI events/parts)* `Ctrl+q` = quantize event ends
-- *(MIDI events/parts)* `Ctrl+Shift+q` = quantize event lengths
-- *(MIDI events/parts)* `Shift+q` = reset quantize
-- *(MIDI events/parts)* `v` = legato
-- *(MIDI parts)* `Ctrl+s` = export first selected part as MIDI loop (includes track settings)
-- *(key editor)* `Tab` = open/close note expression editor
 
 ### File Dialogs
 
