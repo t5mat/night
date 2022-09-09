@@ -392,7 +392,7 @@ global Url := "https://github.com/t5mat/night"
 
 global MacroPrefix := "~ night - "
 global PleFolderName := "night"
-global HashMacroPrefix := "~ night "
+global VersionMacroPrefix := "~ night "
 
 global SelfPid := DllCall("GetCurrentProcessId", "UInt")
 
@@ -544,7 +544,7 @@ IsValidKeyCommandsXml(KeyCommandsXml) {
 }
 
 IsInstalled(Hash, KeyCommandsXml) {
-    return !!KeyCommandsXml.selectSingleNode("/KeyCommands/list[@name='Macros']/item/string[@name='Name' and @value='" HashMacroPrefix Hash "']")
+    return !!KeyCommandsXml.selectSingleNode("/KeyCommands/list[@name='Macros']/item/string[@name='Name' and @value='" VersionMacroPrefix Version " " Hash "']")
 }
 
 InstallKeyCommands(Xml, KeyCommandsXml) {
@@ -619,10 +619,10 @@ InstallPle(Xml, PlePath) {
     }
 }
 
-InstallHashMacro(Hash, KeyCommandsXml) {
+InstallVersionMacro(Hash, KeyCommandsXml) {
     Name := KeyCommandsXml.createElement("string")
     Name.setAttribute("name", "Name")
-    Name.setAttribute("value", HashMacroPrefix Hash)
+    Name.setAttribute("value", VersionMacroPrefix Version " " Hash)
 
     Item := KeyCommandsXml.createElement("item")
     Item.appendChild(Name)
@@ -646,7 +646,7 @@ UninstallKeyCommands(KeyCommandsXml) {
     Macros := KeyCommandsXml.selectSingleNode("/KeyCommands/list[@name='Macros']")
     for Macro in Macros.selectNodes("item") {
         Name := Macro.selectSingleNode("string[@name='Name']").getAttribute("value")
-        if (InStr(Name, HashMacroPrefix, true) == 1 || InStr(Name, MacroPrefix, true) == 1) {
+        if (InStr(Name, VersionMacroPrefix, true) == 1 || InStr(Name, MacroPrefix, true) == 1) {
             Macros.removeChild(Macro)
         }
     }
@@ -654,7 +654,7 @@ UninstallKeyCommands(KeyCommandsXml) {
     Commands := KeyCommandsXml.selectSingleNode("/KeyCommands/list[@name='Categories']/item/string[@name='Name' and @value='Macro']/../list[@name='Commands']")
     for Command in Commands.selectNodes("item") {
         Name := Command.selectSingleNode("string[@name='Name']").getAttribute("value")
-        if (InStr(Name, HashMacroPrefix, true) == 1 || InStr(Name, MacroPrefix, true) == 1) {
+        if (InStr(Name, VersionMacroPrefix, true) == 1 || InStr(Name, MacroPrefix, true) == 1) {
             Commands.removeChild(Command)
         }
     }
@@ -1243,7 +1243,7 @@ AutoExec() {
 
         InstallKeyCommands(Xml, KeyCommandsXml)
         InstallPle(Xml, PlePath)
-        InstallHashMacro(XmlHash, KeyCommandsXml)
+        InstallVersionMacro(XmlHash, KeyCommandsXml)
 
         WriteFileUtf8(KeyCommandsPath, KeyCommandsXml.xml)
 
