@@ -824,6 +824,7 @@ ShowActiveAppMenuInfo() {
 
     Rows := []
     if ((ActiveAppMenuContext & AppMenuContextTrackList) || (ActiveAppMenuContext & AppMenuContextMixConsoleTracks)) {
+        Rows.Push(["n", "add track"])
         Rows.Push(["Ctrl+a", "select all tracks"])
 
         if (ActiveAppMenuContext & AppMenuContextTrack) {
@@ -999,6 +1000,7 @@ global MenuTime
 
 global ColorizeHwnd
 global LastAppWindowDestroyTime
+global AddTrackHwnd
 
 WaitActiveAppMenu(ByRef Menu, ByRef Context) {
     Start := A_TickCount
@@ -1035,6 +1037,7 @@ SetEventHook() {
 
     ColorizeHwnd :=
     LastAppWindowDestroyTime :=
+    AddTrackHwnd :=
 }
 
 EventProc(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
@@ -1074,6 +1077,10 @@ HandleWindowForeground(Time, Hwnd) {
         WinClose % "ahk_id " ColorizeHwnd
     }
 
+    if (ActiveHwnd != AddTrackHwnd && AddTrackHwnd) {
+        WinClose % "ahk_id " AddTrackHwnd
+    }
+
     if ((ActiveHwndContext & HwndContextAppMenu) && !(LastActiveHwndContext & HwndContextAppProjectWindow) && LastAppWindowDestroyTime && (Time - LastAppWindowDestroyTime <= 150)) {
         if (!(Hwnd := FindAppProjectWindow())) {
             return
@@ -1093,6 +1100,10 @@ HandleWindowDestroy(Time, Hwnd) {
 
     if (ColorizeHwnd == Hwnd) {
         ColorizeHwnd :=
+    }
+
+    if (AddTrackHwnd == Hwnd) {
+        AddTrackHwnd :=
     }
 
     if (WinExist("ahk_exe i)^\Q" AppExePath "\E$ ahk_id " Hwnd)) {
@@ -2011,6 +2022,79 @@ $i::
         SendEvent % "{Blind}{i}"
     }
 
+$n::
+    HandleAppMenuN() {
+        if (!WaitActiveAppMenu(Menu, Context)) {
+            return
+        }
+
+        if ((Context & AppMenuContextTrackList) || (Context & AppMenuContextMixConsoleTracks)) {
+            CloseActiveMenu()
+
+            Text := "
+(
+(add track)
+a = audio
+i = instrument
+m = midi
+s = sampler
+f = folder
+g = group channel
+v = VCA fader
+x = FX channel
+)"
+
+            ToolTip(Text)
+            Hwnd := WinExist("ahk_pid " SelfPid " " ToolTipTitle)
+
+            WinActivate % "ahk_id " Hwnd
+
+            Start := A_TickCount
+            while (ActiveHwnd != Hwnd) {
+                if (A_TickCount - Start > 1000) {
+                    return
+                }
+                Sleep % 5
+            }
+
+            AddTrackHwnd := Hwnd
+
+            return
+        }
+
+        SendEvent % "{Blind}{n}"
+    }
+
+$^n::
+    HandleAppMenuCtrlN() {
+        if (!WaitActiveAppMenu(Menu, Context)) {
+            return
+        }
+
+        if ((Context & AppMenuContextTrackList) || (Context & AppMenuContextMixConsoleTracks)) {
+            CloseActiveMenu()
+            SendEvent % MacroKeys["AddTrack - From Track Presets"]
+            return
+        }
+
+        SendEvent % "{Blind}{n}"
+    }
+
+$+n::
+    HandleAppMenuShiftN() {
+        if (!WaitActiveAppMenu(Menu, Context)) {
+            return
+        }
+
+        if ((Context & AppMenuContextTrackList) || (Context & AppMenuContextMixConsoleTracks)) {
+            CloseActiveMenu()
+            SendEvent % MacroKeys["AddTrack - OpenDialog"]
+            return
+        }
+
+        SendEvent % "{Blind}{n}"
+    }
+
 $^o::
     HandleAppMenuCtrlO() {
         if (!WaitActiveAppMenu(Menu, Context)) {
@@ -2355,4 +2439,59 @@ $z::
         }
 
         SendEvent % "{Blind}{z}"
+    }
+
+#If AddTrackHwnd
+
+$Escape::
+    HandleAddTrackEscape() {
+        WinClose % "ahk_id " AddTrackHwnd
+    }
+
+$a::
+    HandleAddTrackA() {
+        WinClose % "ahk_id " AddTrackHwnd
+        SendEvent % MacroKeys["AddTrack - Audio"]
+    }
+
+$f::
+    HandleAddTrackF() {
+        WinClose % "ahk_id " AddTrackHwnd
+        SendEvent % MacroKeys["AddTrack - Folder"]
+    }
+
+$g::
+    HandleAddTrackG() {
+        WinClose % "ahk_id " AddTrackHwnd
+        SendEvent % MacroKeys["AddTrack - Group Channel"]
+    }
+
+$i::
+    HandleAddTrackI() {
+        WinClose % "ahk_id " AddTrackHwnd
+        SendEvent % MacroKeys["AddTrack - Instrument"]
+    }
+
+$m::
+    HandleAddTrackM() {
+        WinClose % "ahk_id " AddTrackHwnd
+        SendEvent % MacroKeys["AddTrack - MIDI"]
+    }
+
+$s::
+    HandleAddTrackS() {
+        WinClose % "ahk_id " AddTrackHwnd
+        SendEvent % MacroKeys["AddTrack - Sampler"]
+    }
+
+$v::
+    HandleAddTrackV() {
+        WinClose % "ahk_id " AddTrackHwnd
+        SendEvent % MacroKeys["AddTrack - VCA Fader"]
+    }
+
+$x::
+    HandleAddTrackX() {
+        WinClose % "ahk_id " AddTrackHwnd
+        SendEvent % MacroKeys["AddTrack - FX Channel"]
     }

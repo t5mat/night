@@ -32,6 +32,106 @@
       <string name="Key" value="auto" wide="true" />
     </item>
     <item>
+      <string name="Name" value="AddTrack - OpenDialog" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="AddTrack" />
+          <string name="Name" value="OpenDialog" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="AddTrack - From Track Presets" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="AddTrack" />
+          <string name="Name" value="From Track Presets" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="AddTrack - Audio" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="AddTrack" />
+          <string name="Name" value="Audio" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="AddTrack - Instrument" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="AddTrack" />
+          <string name="Name" value="Instrument" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="AddTrack - Sampler" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="AddTrack" />
+          <string name="Name" value="Sampler" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="AddTrack - MIDI" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="AddTrack" />
+          <string name="Name" value="MIDI" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="AddTrack - Group Channel" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="AddTrack" />
+          <string name="Name" value="Group Channel" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="AddTrack - FX Channel" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="AddTrack" />
+          <string name="Name" value="FX Channel" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="AddTrack - VCA Fader" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="AddTrack" />
+          <string name="Name" value="VCA Fader" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
+      <string name="Name" value="AddTrack - Folder" />
+      <list name="Commands" type="list">
+        <item>
+          <string name="Category" value="AddTrack" />
+          <string name="Name" value="Folder" />
+        </item>
+      </list>
+      <string name="Key" value="auto" wide="true" />
+    </item>
+    <item>
       <string name="Name" value="Zoom - Zoom Out Vertically" />
       <list name="Commands" type="list">
         <item>

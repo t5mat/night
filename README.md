@@ -227,4 +227,4 @@ All the macros and PLE presets installed/used by night are defined in `night.xml
 
 For each macro in `night.xml` that is assigned to `auto`, night will generate a random unicode character and assign it to that macro in Cubase. These assignments are then accessible to night itself as a way to trigger macros inside Cubase.
 
-To add/modify hotkeys, focus on the last sections of code in `night.ahk` (code is structured from most library code to most app-specific code).
+The last sections of code in `night.ahk` are the most relevant for adding/modifying hotkeys (code is structured from most library code to most app-specific code). Looking at a diff of a commit that adds a new hotkey can also help.
