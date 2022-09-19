@@ -734,6 +734,9 @@ ShowActiveAppMenuInfo() {
     Rows := []
     if ((ActiveAppMenuContext & AppMenuContextTrackList) || (ActiveAppMenuContext & AppMenuContextMixConsoleTracks)) {
         Rows.Push(["n", "add track"])
+        Rows.Push(["Ctrl+n", "add track from track preset"])
+        Rows.Push(["Shift+n", "add track dialog"])
+        Rows.Push(["", ""])
         Rows.Push(["Ctrl+a", "select all tracks"])
 
         if (ActiveAppMenuContext & AppMenuContextTrack) {
