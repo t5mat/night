@@ -257,7 +257,7 @@ SetWinEventHook(EventMin, EventMax, FuncName) {
 global ToolTipTitle := "ahk_class ^tooltips_class32$"
 
 ToolTip(Text := "", X := "", Y := "", Timeout := 0, WhichToolTip := "") {
-    static Timers = {}
+    static Timers := {}
 
     if (!WhichToolTip) {
         WhichToolTip := 1
