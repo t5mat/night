@@ -245,13 +245,50 @@ FindWindowChildrenRecursive(Hwnd) {
     return _FindWindowChildrenRecursiveList
 }
 
-GetFocusedControl(WinTitle) {
-    ControlGetFocus Focus, % WinTitle
+SetWinEventHook(EventMin, EventMax, FuncName) {
+    DllCall("SetWinEventHook", "UInt", EventMin, "UInt", EventMax, "Ptr", 0, "Ptr", RegisterCallback(FuncName, "F"), "UInt", 0, "UInt", 0, "UInt", 0)
+}
+
+GetHwndClass(Hwnd) {
+    WinGetClass Cls, % "ahk_id " Hwnd
+    return Cls
+}
+
+GetControlHwndNN(Hwnd, ControlHwnd, ControlClass) {
+    WinGet Controls, ControlListHwnd, % "ahk_id " Hwnd
+    Nn := 0
+    loop parse, Controls, `n
+    {
+        WinGetClass Class_, % "ahk_id " A_LoopField
+        if (Class_ == ControlClass) {
+            Nn += 1
+            if (A_LoopField == ControlHwnd) {
+                break
+            }
+        }
+    }
+    return Nn
+}
+
+GetFocus(Hwnd) {
+    CurrentThreadId := DllCall("GetCurrentThreadId", "UInt")
+	HwndThreadId := DllCall("GetWindowThreadProcessId", "UInt", Hwnd, "UIntP", 0, "UInt")
+	if (!DllCall("AttachThreadInput", "UInt", CurrentThreadId, "UInt", HwndThreadId, "Int", 1, "Int")) {
+        return
+    }
+    Focus := DllCall("GetFocus", "Ptr")
+    DllCall("AttachThreadInput", "UInt", CurrentThreadId, "UInt", HwndThreadId, "Int", 0)
     return Focus
 }
 
-SetWinEventHook(EventMin, EventMax, FuncName) {
-    DllCall("SetWinEventHook", "UInt", EventMin, "UInt", EventMax, "Ptr", 0, "Ptr", RegisterCallback(FuncName, "F"), "UInt", 0, "UInt", 0, "UInt", 0)
+SetFocus(Hwnd, ControlHwnd) {
+    CurrentThreadId := DllCall("GetCurrentThreadId", "UInt")
+	HwndThreadId := DllCall("GetWindowThreadProcessId", "UInt", Hwnd, "UIntP", 0, "UInt")
+	if (!DllCall("AttachThreadInput", "UInt", CurrentThreadId, "UInt", HwndThreadId, "Int", 1, "Int")) {
+        return
+    }
+    DllCall("SetFocus", "Ptr", ControlHwnd)
+    DllCall("AttachThreadInput", "UInt", CurrentThreadId, "UInt", HwndThreadId, "Int", 0)
 }
 
 global ToolTipTitle := "ahk_class ^tooltips_class32$"
@@ -346,41 +383,33 @@ TrySelectActiveMenuItem(Menu, Name) {
 
 global DialogTitle := "ahk_class ^#32770$"
 
-global FileDialogListViewControl := "DirectUIHWND2"
+global FileDialogListViewControlClassNN := "DirectUIHWND2"
 
 IsDialogFileDialog(WinTitle) {
-    ControlGet Hwnd, Hwnd, , % FileDialogListViewControl, % WinTitle
-    return !!Hwnd
+    ControlGet ControlHwnd, Hwnd, , % FileDialogListViewControlClassNN, % WinTitle
+    return !!ControlHwnd
 }
 
-FileDialogActiveGetFolderPath(Hwnd) {
+FileDialogActiveGetFolderPath(ByRef ActiveControlHwnd, ByRef ActiveControlClass, ByRef ActiveControlNn) {
     SendPlay % "^{l}"
 
     Start := A_TickCount
-    while ((Focus := GetFocusedControl("ahk_id " Hwnd)) != "Edit2") {
+    while ((ActiveControlClass ActiveControlNn) != "Edit2") {
         if (A_TickCount - Start > 1000) {
             return
         }
         Sleep % 5
     }
 
-    ControlGetText Path, % Focus, % "ahk_id " Hwnd
-    ControlSend % Focus, % "{Escape}", % "ahk_id " Hwnd
+    ControlGetText Path, , % "ahk_id " ActiveControlHwnd
+    ControlSend, , % "{Escape}", % "ahk_id " ActiveControlHwnd
     return Path
 }
 
-FileDialogActiveNavigate(Paths, Hwnd) {
-    ControlFocus % (Focus := "Edit1"), % "ahk_id " Hwnd
-
-    Start := A_TickCount
-    while (GetFocusedControl("ahk_id " Hwnd) != Focus) {
-        if (A_TickCount - Start > 1000) {
-            return
-        }
-        Sleep % 5
-    }
-
-    ControlSetText % Focus, % """" Join(Paths, """ """) """", % "ahk_id " Hwnd
+FileDialogActiveNavigate(Hwnd, Paths) {
+    ControlGet ControlHwnd, Hwnd, , % "Edit1", % "ahk_id " Hwnd
+    SetFocus(Hwnd, ControlHwnd)
+    ControlSetText, , % """" Join(Paths, """ """) """", % "ahk_id " ControlHwnd
     SendPlay % "{Enter}{Delete}"
 }
 
@@ -913,6 +942,10 @@ ShowActiveAppMenuInfo() {
 
 global ActiveHwnd
 global ActiveHwndContext
+global ActiveControlHwnd
+global ActiveControlClass
+global ActiveControlNN
+global ActiveMenuCount
 global ActiveAppMenu
 global ActiveAppMenuContext
 global MenuTime
@@ -944,13 +977,18 @@ SetEventHook() {
     SetWinEventHook((EVENT_SYSTEM_MENUPOPUPSTART := 0x0006), EVENT_SYSTEM_MENUPOPUPSTART, "EventProc")
     SetWinEventHook((EVENT_SYSTEM_MENUPOPUPEND := 0x0007), EVENT_SYSTEM_MENUPOPUPEND, "EventProc")
     SetWinEventHook((EVENT_OBJECT_DESTROY := 0x8001), EVENT_OBJECT_DESTROY, "EventProc")
+    SetWinEventHook((EVENT_OBJECT_FOCUS := 0x8005), EVENT_OBJECT_FOCUS, "EventProc")
     SetWinEventHook((EVENT_OBJECT_NAMECHANGE := 0x800C), EVENT_OBJECT_NAMECHANGE, "EventProc")
 
     ActiveHwnd := WinExist("A")
     ActiveHwndContext := FindHwndContext(ActiveHwnd)
-    if (ActiveAppMenu := (ActiveHwndContext & HwndContextAppChildWindow) ? GetActiveMenu() :) {
-        ActiveAppMenuContext := FindAppMenuContext(ActiveAppMenu)
-    }
+    ActiveControlHwnd := GetFocus(ActiveHwnd)
+    ActiveControlClass := GetHwndClass(ActiveControlHwnd)
+    ActiveControlNn := GetControlHwndNN(ActiveHwnd, ActiveControlHwnd, ActiveControlClass)
+    Menu := GetActiveMenu()
+    ActiveMenuCount := Menu ? 1 : 0
+    ActiveAppMenu := (ActiveHwndContext & HwndContextAppChildWindow) ? Menu :
+    ActiveAppMenuContext := FindAppMenuContext(ActiveAppMenu)
     ShowActiveAppMenuInfo()
     MenuTime := 0
 
@@ -980,6 +1018,11 @@ EventProc(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEven
         return
     }
 
+    if ((EVENT_OBJECT_FOCUS := 0x8005) == event) {
+        HandleObjectFocus(dwmsEventTime, hwnd)
+        return
+    }
+
     if ((EVENT_OBJECT_NAMECHANGE := 0x800C) == event && idObject == (OBJID_WINDOW := 0x00000000)) {
         HandleWindowNameChange(dwmsEventTime, hwnd)
         return
@@ -989,6 +1032,7 @@ EventProc(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEven
 HandleWindowForeground(Time, Hwnd) {
     LastActiveHwnd := ActiveHwnd
     LastActiveHwndContext := ActiveHwndContext
+
     ActiveHwnd := Hwnd
     ActiveHwndContext := FindHwndContext(ActiveHwnd)
 
@@ -1004,16 +1048,15 @@ HandleWindowForeground(Time, Hwnd) {
         if (!(Hwnd := FindAppProjectWindow())) {
             return
         }
-        WinActivate % "ahk_id " Hwnd
+        DllCall("SetForegroundWindow", "Ptr", Hwnd)
         return
     }
 }
 
 HandleWindowDestroy(Time, Hwnd) {
-    if (!ActiveAppMenu) {
-        if (ActiveAppMenu := (ActiveHwndContext & HwndContextAppChildWindow) ? GetActiveMenu() :) {
-            ActiveAppMenuContext := FindAppMenuContext(ActiveAppMenu)
-        }
+    if (ActiveMenuCount && !ActiveAppMenu) {
+        ActiveAppMenu := (ActiveHwndContext & HwndContextAppChildWindow) ? GetActiveMenu() :
+        ActiveAppMenuContext := ActiveAppMenu ? FindAppMenuContext(ActiveAppMenu) : 0
         ShowActiveAppMenuInfo()
     }
 
@@ -1037,16 +1080,6 @@ HandleWindowNameChange(Time, Hwnd) {
         }
         ColorizeHwnd := Hwnd
 
-        WinActivate % "ahk_id " Hwnd
-
-        Start := A_TickCount
-        while (ActiveHwnd != Hwnd) {
-            if (A_TickCount - Start > 1000) {
-                return
-            }
-            Sleep % 5
-        }
-
         WinGetPos, , , Width, Height, % "ahk_id " Hwnd
 
         CoordMode Mouse, Screen
@@ -1057,21 +1090,31 @@ HandleWindowNameChange(Time, Hwnd) {
         static Padding := 10
         X := Max(MonitorX + Padding, Min(MonitorX + MonitorWidth - Padding - Width, X - Width // 2))
         Y := Max(MonitorY + Padding, Min(MonitorY + MonitorHeight - Padding - Height, Y - 5))
-        WinMove % "ahk_id " Hwnd, , % X, % Y
 
+        DllCall("SetForegroundWindow", "Ptr", Hwnd)
+        WinMove % "ahk_id " Hwnd, , % X, % Y
         return
     }
 }
 
+HandleObjectFocus(Time, Hwnd) {
+    ActiveControlHwnd := Hwnd
+    ActiveControlClass := GetHwndClass(ActiveControlHwnd)
+    ActiveControlNn := GetControlHwndNN(ActiveHwnd, ActiveControlHwnd, ActiveControlClass)
+}
+
 HandleMenuPopupStart(Time) {
-    if (ActiveAppMenu := (ActiveHwndContext & HwndContextAppChildWindow) ? GetActiveMenu() :) {
-        ActiveAppMenuContext := FindAppMenuContext(ActiveAppMenu)
-    }
+    ActiveMenuCount += 1
+    ActiveAppMenu := (ActiveHwndContext & HwndContextAppChildWindow) ? GetActiveMenu() :
+    ActiveAppMenuContext := ActiveAppMenu ? FindAppMenuContext(ActiveAppMenu) : 0
     MenuTime := 0
     ShowActiveAppMenuInfo()
 }
 
 HandleMenuPopupEnd(Time) {
+    if (ActiveMenuCount > 0) {
+        ActiveMenuCount -= 1
+    }
     ActiveAppMenu :=
     ShowActiveAppMenuInfo()
 }
@@ -1279,7 +1322,7 @@ global InSpaceWriteAutomation := false
 
 return
 
-#If !ActiveAppMenu && (ActiveHwndContext & HwndContextAppWindow)
+#If !ActiveMenuCount && (ActiveHwndContext & HwndContextAppWindow)
 
 ~*RButton::
     HandleAppWindowWildcardRButton() {
@@ -1296,19 +1339,7 @@ $XButton1::
         if (!(Hwnd := FindAppProjectWindow())) {
             return
         }
-
-        if (ActiveHwnd != Hwnd) {
-            WinActivate % "ahk_id " Hwnd
-
-            Start := A_TickCount
-            while (ActiveHwnd != Hwnd) {
-                if (A_TickCount - Start > 1000) {
-                    return
-                }
-                Sleep % 5
-            }
-        }
-
+        DllCall("SetForegroundWindow", "Ptr", Hwnd)
         SendEvent % MacroKeys["Show Lower Zone MixConsole Page 1"] MacroKeys["Edit - Open/Close Editor"]
     }
 
@@ -1317,19 +1348,7 @@ $XButton2::
         if (!(Hwnd := FindAppProjectWindow())) {
             return
         }
-
-        if (ActiveHwnd != Hwnd) {
-            WinActivate % "ahk_id " Hwnd
-
-            Start := A_TickCount
-            while (ActiveHwnd != Hwnd) {
-                if (A_TickCount - Start > 1000) {
-                    return
-                }
-                Sleep % 5
-            }
-        }
-
+        DllCall("SetForegroundWindow", "Ptr", Hwnd)
         SendEvent % MacroKeys["Show Lower Zone MixConsole Page 1"] (MixConsolePage < 2 ? "" : MacroKeys["Window Zones - Show Next Page"]) (MixConsolePage < 3 ? "" : MacroKeys["Window Zones - Show Next Page"])
     }
 
@@ -1351,7 +1370,7 @@ $XButton2::
         SendEvent % MacroKeys["Window Zones - Show Next Page"] MacroKeys["Window Zones - Show Next Page"]
     }
 
-#If !ActiveAppMenu && (ActiveHwndContext & HwndContextAppWindow) && GetKeyState("XButton2", "P")
+#If !ActiveMenuCount && (ActiveHwndContext & HwndContextAppWindow) && GetKeyState("XButton2", "P")
 
 $WheelDown::
     HandleAppWindowWheelDown() {
@@ -1369,7 +1388,7 @@ $WheelUp::
         }
     }
 
-#If !ActiveAppMenu && (ActiveHwndContext & HwndContextAppChildWindow)
+#If !ActiveMenuCount && (ActiveHwndContext & HwndContextAppChildWindow)
 
 $!WheelDown::
     HandleAppWindowAltWheelDown() {
@@ -1443,7 +1462,7 @@ $^+!WheelUp::
         SendEvent % MacroKeys["Zoom - Zoom In On Waveform Vertically"]
     }
 
-#If !ActiveAppMenu && (ActiveHwndContext & HwndContextApp)
+#If !ActiveMenuCount && (ActiveHwndContext & HwndContextApp)
 
 $Escape::
     HandleAppEscape() {
@@ -1482,7 +1501,7 @@ $Space::
         }
     }
 
-#If !ActiveAppMenu && ((ActiveHwndContext & HwndContextSelf) || (ActiveHwndContext & HwndContextApp)) && (ActiveHwndContext & HwndContextFileDialog)
+#If !ActiveMenuCount && ((ActiveHwndContext & HwndContextSelf) || (ActiveHwndContext & HwndContextApp)) && (ActiveHwndContext & HwndContextFileDialog)
 
 $F1::
 $F2::
@@ -1510,7 +1529,7 @@ $F12::
         Path := ShellGetPidlPath(Pidl)
         DllCall("ole32\CoTaskMemFree", "Ptr", Pidl)
 
-        FileDialogActiveNavigate([Path], ActiveHwnd)
+        FileDialogActiveNavigate(ActiveHwnd, [Path])
     }
 
 $+F1::
@@ -1526,7 +1545,7 @@ $+F10::
 $+F11::
 $+F12::
     HandleDialogShiftFButton() {
-        Path := FileDialogActiveGetFolderPath(ActiveHwnd)
+        Path := FileDialogActiveGetFolderPath(ActiveControlHwnd, ActiveControlClass, ActiveControlNn)
         IniWrite % Path, % SettingsPath, % "FileDialogPaths", % SubStr(A_ThisHotkey, 3)
     }
 
@@ -2060,19 +2079,8 @@ x = FX channel
 
             ToolTip(Text)
             Hwnd := WinExist("ahk_pid " SelfPid " " ToolTipTitle)
-
             WinActivate % "ahk_id " Hwnd
-
-            Start := A_TickCount
-            while (ActiveHwnd != Hwnd) {
-                if (A_TickCount - Start > 1000) {
-                    return
-                }
-                Sleep % 5
-            }
-
             AddTrackHwnd := Hwnd
-
             return
         }
 
@@ -2158,18 +2166,16 @@ $q::
             CloseActiveMenu()
             SendEvent % "{Enter}"
 
-            Hwnd := ActiveHwnd
-
             Start := A_TickCount
-            while ((Focus := GetFocusedControl("ahk_id " Hwnd)) != "Edit1") {
+            while (ActiveControlClass != "Edit") {
                 if (A_TickCount - Start > 1000) {
                     return
                 }
                 Sleep % 5
             }
 
-            ControlSetText % Focus, % "-oo", % "ahk_id " Hwnd
-            ControlSend % Focus, % "{Enter}", % "ahk_id " Hwnd
+            ControlSetText, , % "-oo", % "ahk_id " ActiveControlHwnd
+            ControlSend, , % "{Enter}", % "ahk_id " ActiveControlHwnd
             return
         }
 
