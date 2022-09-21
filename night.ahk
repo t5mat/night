@@ -1101,6 +1101,10 @@ HandleObjectFocus(Time, Hwnd) {
     ActiveControlHwnd := Hwnd
     ActiveControlClass := GetHwndClass(ActiveControlHwnd)
     ActiveControlNn := GetControlHwndNN(ActiveHwnd, ActiveControlHwnd, ActiveControlClass)
+
+    if (ActiveHwnd == DllCall("GetAncestor", "Ptr", ActiveControlHwnd, "UInt", 2)) {
+        ActiveHwndContext := FindHwndContext(ActiveHwnd)
+    }
 }
 
 HandleMenuPopupStart(Time) {
