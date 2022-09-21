@@ -346,6 +346,13 @@ TrySelectActiveMenuItem(Menu, Name) {
 
 global DialogTitle := "ahk_class ^#32770$"
 
+global FileDialogListViewControl := "DirectUIHWND2"
+
+IsDialogFileDialog(WinTitle) {
+    ControlGet Hwnd, Hwnd, , % FileDialogListViewControl, % WinTitle
+    return !!Hwnd
+}
+
 FileDialogActiveGetFolderPath(Hwnd) {
     SendPlay % "^{l}"
 
@@ -423,7 +430,7 @@ IsAppColorizeWindow(Hwnd) {
     return (WinExist("^Colorize$ ahk_class ^SteinbergWindowClass$ ahk_exe i)^\Q" AppExePath "\E$ ahk_id " Hwnd) && FindWindowChildrenRecursive(Hwnd).Count() == 0)
 }
 
-global HwndContextDialog := (1 << 0)
+global HwndContextFileDialog := (1 << 0)
 global HwndContextSelf := (1 << 1)
 global HwndContextApp := (1 << 2)
 global HwndContextAppMenu := (1 << 3)
@@ -436,8 +443,8 @@ global HwndContextAppColorizeWindow := (1 << 8)
 FindHwndContext(Hwnd) {
     Context := 0
 
-    if (WinExist(DialogTitle " ahk_id " Hwnd)) {
-        Context := Context | HwndContextDialog
+    if (IsDialogFileDialog(DialogTitle " ahk_id " Hwnd)) {
+        Context := Context | HwndContextFileDialog
     }
 
     if (WinExist("ahk_pid " SelfPid " ahk_id " Hwnd)) {
@@ -1475,7 +1482,7 @@ $Space::
         }
     }
 
-#If !ActiveAppMenu && ((ActiveHwndContext & HwndContextSelf) || (ActiveHwndContext & HwndContextApp)) && (ActiveHwndContext & HwndContextDialog)
+#If !ActiveAppMenu && ((ActiveHwndContext & HwndContextSelf) || (ActiveHwndContext & HwndContextApp)) && (ActiveHwndContext & HwndContextFileDialog)
 
 $F1::
 $F2::
