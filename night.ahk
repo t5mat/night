@@ -1057,6 +1057,7 @@ HandleMenuPopupStart(Time) {
     if (ActiveAppMenu := (ActiveHwndContext & HwndContextAppChildWindow) ? GetActiveMenu() :) {
         ActiveAppMenuContext := FindAppMenuContext(ActiveAppMenu)
     }
+    MenuTime := 0
     ShowActiveAppMenuInfo()
 }
 
