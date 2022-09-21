@@ -205,14 +205,14 @@ ShellOpenFolderAndSelect(Path, Paths, Flags) {
     PathPidl := ShellParseDisplayName(Path)
     VarSetCapacity(PathsPidls, PathsCount * A_PtrSize, 0)
     loop % Paths.Count() {
-        NumPut(ShellParseDisplayName(Paths[A_Index]), PathsPidls, (A_Index - 1) * A_PtrSize, "UPtr")
+        NumPut(ShellParseDisplayName(Paths[A_Index]), PathsPidls, (A_Index - 1) * A_PtrSize, "Ptr")
     }
 
     DllCall("shell32\SHOpenFolderAndSelectItems", "Ptr", PathPidl, "UInt", PathsCount, "Ptr", &PathsPidls, "Int", Flags)
 
     DllCall("ole32\CoTaskMemFree", "Ptr", PathPidl)
     loop % Paths.Count() {
-        DllCall("ole32\CoTaskMemFree", "Ptr", NumGet(PathsPidls, (A_Index - 1) * A_PtrSize, "UPtr"))
+        DllCall("ole32\CoTaskMemFree", "Ptr", NumGet(PathsPidls, (A_Index - 1) * A_PtrSize, "Ptr"))
     }
 }
 
@@ -319,7 +319,7 @@ CloseActiveMenu() {
 }
 
 OpenActiveSubMenu(Index) {
-    SendMessage 0x1Ed, % Index, 0, , % MenuTitle
+    SendMessage 0x1ED, % Index, 0, , % MenuTitle
 }
 
 SelectActiveMenuItem(Index) {
@@ -724,97 +724,6 @@ PatchProjectColors(ProjectPath, ColorsPath) {
     return Patched
 }
 
-CreateTrayMenu() {
-    Menu, Tray, NoStandard
-    Menu, Tray, Add, % "night " Version, TrayMenuNight
-    Menu, Tray, Add, % "Uninstall", TrayMenuUninstall
-    Menu, Tray, Add
-    Menu, Tray, Add, % AppName " " AppExeVersionInfo.FileVersion, TrayMenuApp
-    Menu, Tray, Add, % AppName " Program Files", TrayMenuProgramFiles
-    Menu, Tray, Add, % AppName " AppData", TrayMenuAppData
-    Menu, Tray, Add, % AppName " Documents", TrayMenuDocuments
-    Menu, Tray, Add
-    Menu, Tray, Add, % "Project Colors Patcher", TrayMenuProjectColorsPatcher
-    Menu, Tray, Add
-    Menu, Tray, Add, % "AutoHotkey " A_AhkVersion, TrayMenuStub
-    Menu, Tray, Disable, % "AutoHotkey " A_AhkVersion
-    Menu, Tray, Standard
-}
-
-TrayMenuNight() {
-    Run % Url
-}
-
-TrayMenuUninstall() {
-    if (FindAppExeWindow()) {
-        MsgBox % (0x0 | 0x30 | 0x40000), % "night", % "Please close " AppName " before uninstalling night."
-        return
-    }
-
-    Uninstall(KeyCommandsPath, PlePath)
-
-    IniDelete % SettingsPath, % "night", % "AppExePath"
-    IniDelete % SettingsPath, % "night", % "KeyCommandsPath"
-    IniDelete % SettingsPath, % "night", % "PlePath"
-
-    MsgBox % (0x0 | 0x40 | 0x40000), % "night", % "night has been uninstalled.`n`n" KeyCommandsPath "`n`n" PlePath
-    ExitApp
-}
-
-TrayMenuApp() {
-    Run % AppExePath
-}
-
-TrayMenuProgramFiles() {
-    SplitPath AppExePath, , Path
-    ShellOpenFolderAndSelect(Path, [AppExePath], 0)
-}
-
-TrayMenuAppData() {
-    SplitPath KeyCommandsPath, , Path
-    ShellOpenFolderAndSelect(Path, [Path], 0)
-}
-
-TrayMenuDocuments() {
-    SplitPath PlePath, , Path
-    ShellOpenFolderAndSelect(Path, [Path], 0)
-}
-
-TrayMenuProjectColorsPatcher() {
-    if (FindAppProjectWindow()) {
-        MsgBox % (0x0 | 0x30 | 0x40000), % "Project Colors Patcher", % "Please close all " AppName " projects before using the Project Colors Patcher."
-        return
-    }
-
-    FileSelectFile ProjectPaths, M3, , % "Project Colors Patcher - select project files (BACK THEM UP FIRST)", % "Cubase/Nuendo Project Files (*.cpr; *.npr)"
-    if (ErrorLevel != 0) {
-        return
-    }
-
-    FileSelectFile ColorsPath, 3, % JoinPath(A_ScriptDir, "colors"), % "Project Colors Patcher - select a colors file", % "Colors Files (*.ini)"
-    if (ErrorLevel != 0) {
-        return
-    }
-
-    loop parse, ProjectPaths, `n
-    {
-        if (A_Index == 1) {
-            Path := A_LoopField
-            continue
-        }
-
-        ProjectPath := JoinPath(Path, A_LoopField)
-        if (Patched := PatchProjectColors(ProjectPath, ColorsPath)) {
-            MsgBox % (0x0 | 0x40 | 0x40000), % "Project Colors Patcher", % "Patched " Patched " color" (Patched == 1 ? "" : "s") " in:`n" ProjectPath
-        } else {
-            MsgBox % (0x0 | 0x10 | 0x40000), % "Project Colors Patcher", % "Error patching:`n" ProjectPath
-        }
-    }
-}
-
-TrayMenuStub() {
-}
-
 ShowActiveAppMenuInfo() {
     Gui ActiveAppMenuInfo:Destroy
 
@@ -1156,6 +1065,99 @@ HandleMenuPopupEnd(Time) {
     ShowActiveAppMenuInfo()
 }
 
+CreateTrayMenu() {
+    Menu Tray, Tip, % "night"
+
+    Menu Tray, NoStandard
+    Menu Tray, Add, % "night " Version, TrayMenuNight
+    Menu Tray, Add, % "Uninstall", TrayMenuUninstall
+    Menu Tray, Add
+    Menu Tray, Add, % AppName " " AppExeVersionInfo.FileVersion, TrayMenuApp
+    Menu Tray, Add, % AppName " Program Files", TrayMenuProgramFiles
+    Menu Tray, Add, % AppName " AppData", TrayMenuAppData
+    Menu Tray, Add, % AppName " Documents", TrayMenuDocuments
+    Menu Tray, Add
+    Menu Tray, Add, % "Project Colors Patcher", TrayMenuProjectColorsPatcher
+    Menu Tray, Add
+    Menu Tray, Add, % "AutoHotkey " A_AhkVersion, TrayMenuStub
+    Menu Tray, Disable, % "AutoHotkey " A_AhkVersion
+    Menu Tray, Standard
+}
+
+TrayMenuNight() {
+    Run % Url
+}
+
+TrayMenuUninstall() {
+    if (FindAppExeWindow()) {
+        MsgBox % (0x0 | 0x30 | 0x40000), % "night", % "Please close " AppName " before uninstalling night."
+        return
+    }
+
+    Uninstall(KeyCommandsPath, PlePath)
+
+    IniDelete % SettingsPath, % "night", % "AppExePath"
+    IniDelete % SettingsPath, % "night", % "KeyCommandsPath"
+    IniDelete % SettingsPath, % "night", % "PlePath"
+
+    MsgBox % (0x0 | 0x40 | 0x40000), % "night", % "night has been uninstalled.`n`n" KeyCommandsPath "`n`n" PlePath
+    ExitApp
+}
+
+TrayMenuApp() {
+    Run % AppExePath
+}
+
+TrayMenuProgramFiles() {
+    SplitPath AppExePath, , Path
+    ShellOpenFolderAndSelect(Path, [AppExePath], 0)
+}
+
+TrayMenuAppData() {
+    SplitPath KeyCommandsPath, , Path
+    ShellOpenFolderAndSelect(Path, [Path], 0)
+}
+
+TrayMenuDocuments() {
+    SplitPath PlePath, , Path
+    ShellOpenFolderAndSelect(Path, [Path], 0)
+}
+
+TrayMenuProjectColorsPatcher() {
+    if (FindAppProjectWindow()) {
+        MsgBox % (0x0 | 0x30 | 0x40000), % "Project Colors Patcher", % "Please close all " AppName " projects before using the Project Colors Patcher."
+        return
+    }
+
+    FileSelectFile ProjectPaths, M3, , % "Project Colors Patcher - select project files (BACK THEM UP FIRST)", % "Cubase/Nuendo Project Files (*.cpr; *.npr)"
+    if (ErrorLevel != 0) {
+        return
+    }
+
+    FileSelectFile ColorsPath, 3, % JoinPath(A_ScriptDir, "colors"), % "Project Colors Patcher - select a colors file", % "Colors Files (*.ini)"
+    if (ErrorLevel != 0) {
+        return
+    }
+
+    loop parse, ProjectPaths, `n
+    {
+        if (A_Index == 1) {
+            Path := A_LoopField
+            continue
+        }
+
+        ProjectPath := JoinPath(Path, A_LoopField)
+        if (Patched := PatchProjectColors(ProjectPath, ColorsPath)) {
+            MsgBox % (0x0 | 0x40 | 0x40000), % "Project Colors Patcher", % "Patched " Patched " color" (Patched == 1 ? "" : "s") " in:`n" ProjectPath
+        } else {
+            MsgBox % (0x0 | 0x10 | 0x40000), % "Project Colors Patcher", % "Error patching:`n" ProjectPath
+        }
+    }
+}
+
+TrayMenuStub() {
+}
+
 AutoExec() {
     SetControlDelay -1
     SetWinDelay -1
@@ -1252,8 +1254,9 @@ AutoExec() {
 
     MacroKeys := LoadMacroKeys(KeyCommandsXml)
 
-    CreateTrayMenu()
     SetEventHook()
+
+    CreateTrayMenu()
 }
 
 AutoExec()
