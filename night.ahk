@@ -1276,7 +1276,7 @@ AutoExec() {
 
     IniRead PlePath, % SettingsPath, % "night", % "PlePath", % A_Space
     if (PlePath == A_Space || !InStr(FileExist(PlePath), "D")) {
-        FileSelectFolder PlePath, % "*" JoinPath(A_MyDocuments, "Steinberg\" AppName "\User Presets\"), 2, % "Select your Project Logical Editor user presets folder"
+        FileSelectFolder PlePath, % "*" JoinPath(A_MyDocuments, "Steinberg\" AppName "\User Presets\Project Logical Editor\"), 2, % "Select your Project Logical Editor user presets folder"
         if (ErrorLevel != 0) {
             ExitApp
         }
