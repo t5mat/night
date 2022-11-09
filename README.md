@@ -10,7 +10,7 @@ It overrides almost none of the assignable keyboard shortcut in Cubase/Nuendo; t
 
 I made this to address some of the workflow limitations I've encountered as I was learning Cubase. I've actually come to rely on night much more than I expected, so I decided to take a bit of time to package and share it.
 
-**night was built for and tested on Cubase/Nuendo 12**, but most features should work in earlier versions too. If you're feeling adventurous, know that the PLE user presets folder has changed, and some features might not work due to context menu changes/certain key commands or PLE features not being available.
+**night was built for and tested on Cubase/Nuendo 12**, although most features should work in earlier versions too.
 
 With basic AutoHotkey knowledge, you can tweak existing hotkeys or add new ones relatively easily - see the [Development](#development) section for more info.
 
@@ -36,9 +36,15 @@ Since night adds macros to your key commands file, it is recommended that you fi
 
 On first run, you'll need to provide some information about your Cubase/Nuendo installation -
 
-- Cubase/Nuendo executable, probably `C:\Program Files\Steinberg\Cubase 12\Cubase12.exe`
-- Cubase/Nuendo key commands file, probably `C:\Users\<user>\AppData\Roaming\Steinberg\Cubase 12_64\Key Commands.xml`
-- Cubase/Nuendo PLE user presets folder, probably `C:\Users\<user>\Documents\Steinberg\Cubase\User Presets\Project Logical Editor`
+- **Cubase/Nuendo executable**
+  - `C:\Program Files\Steinberg\Cubase 12\Cubase12.exe` (Cubase 12)
+  - `C:\Program Files\Steinberg\Cubase 11\Cubase11.exe` (Cubase 11)
+- **Cubase/Nuendo key commands file**
+  - `C:\Users\<user>\AppData\Roaming\Steinberg\Cubase 12_64\Key Commands.xml` (Cubase 12)
+  - `C:\Users\<user>\AppData\Roaming\Steinberg\Cubase 11_64\Key Commands.xml` (Cubase 11)
+- **Cubase/Nuendo PLE user presets folder**
+  - `C:\Users\<user>\Documents\Steinberg\Cubase\User Presets\Project Logical Editor` (Cubase 12)
+  - `C:\Users\<user>\AppData\Roaming\Steinberg\Cubase 11_64\Presets\Project Logical Editor` (Cubase 11)
 
 This configuration and other settings will be stored in `<exe-name>.ini`.
 
@@ -117,7 +123,7 @@ You can also use `Ctrl+a` and quickly scroll through every event/hitpoint in you
 
 If you press and hold `Space`, and then press `Mouse1`, write automation will be toggled for all selected tracks. When you release `Space`, write automation will be toggled again and the transport will stop.
 
-This can be used to quickly show automation lanes for parameters (with "reveal on write" activated) - hold `Space`, move a knob, release `Space` and press `Ctrl+z` to undo the automation change. The automation lane will stay revealed. By default, unlike in Ableton or FL Studio for example, in Cubase there's not always a quick way to show an automation lane for the last tweaked parameter.
+This can be used to quickly show automation lanes for parameters (with "reveal on write" activated) - hold `Space`, move a knob, release `Space` and press `Ctrl+z` to undo the automation change. The automation lane will stay revealed. By default, unlike in Ableton or FL Studio for example, in Cubase there isn't always a quick way to show an automation lane for the last tweaked parameter.
 
 This hotkey can also be used to quickly record automation - move your cursor somewhere, hold `Space` and tweak your parameters as the transport is playing.
 
